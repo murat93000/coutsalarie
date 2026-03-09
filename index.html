@@ -1,0 +1,3563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><rect width='36' height='36' rx='8' fill='%230f172a'/><circle cx='18' cy='12' r='5' fill='white'/><path d='M9 28 Q9 20 18 20 Q27 20 27 28' fill='white'/><circle cx='27.5' cy='26.5' r='6.5' fill='%23f59e0b'/><text x='27.5' y='30.5' text-anchor='middle' font-size='8.5' font-weight='900' fill='white' font-family='Arial'>%E2%82%AC</text></svg>">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>CoûtSalarié Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue-900: #0f172a;
+  --blue-800: #1e3a5f;
+  --blue-700: #1d4ed8;
+  --blue-600: #2563eb;
+  --blue-500: #3b82f6;
+  --blue-100: #dbeafe;
+  --blue-50:  #eff6ff;
+  --slate-700: #334155;
+  --slate-500: #64748b;
+  --slate-300: #cbd5e1;
+  --slate-200: #e2e8f0;
+  --slate-100: #f1f5f9;
+  --slate-50:  #f8fafc;
+  --green-600: #16a34a;
+  --green-100: #dcfce7;
+  --red-600:   #dc2626;
+  --red-100:   #fee2e2;
+  --amber-500: #f59e0b;
+  --amber-100: #fef3c7;
+  --white: #ffffff;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 32px rgba(15,23,42,0.12);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--slate-100);
+  color: var(--blue-900);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--blue-900);
+  padding: 0 16px;
+  position: sticky; top: 0; z-index: 200;
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.logo {
+  display: flex; align-items: center; gap: 8px;
+}
+.logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px; height: 30px;
+  background: var(--blue-600);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.logo-text {
+  font-size: 0.95rem; font-weight: 700; color: var(--white);
+  letter-spacing: -0.3px;
+}
+.logo-badge {
+  font-size: 0.55rem; font-weight: 700; background: var(--blue-600);
+  color: white; padding: 2px 5px; border-radius: 4px; letter-spacing: 0.5px;
+}
+.header-actions { display: flex; gap: 8px; }
+
+/* ── TABS ── */
+.tabs {
+  display: flex;
+  background: var(--blue-900);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding: 0 16px;
+  gap: 2px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  padding: 10px 14px;
+  font-size: 0.75rem; font-weight: 600;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.tab.active {
+  color: var(--white);
+  border-bottom-color: var(--blue-500);
+}
+
+/* ── PAGES ── */
+.page { display: none; padding: 16px; padding-bottom: 90px; }
+.page.active { display: block; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--slate-200);
+  position: relative;
+}
+.card-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px;
+}
+.card-title {
+  font-size: 0.8rem; font-weight: 700;
+  color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.6px;
+}
+
+/* ── SECTIONS ── */
+.section-label {
+  font-size: 0.7rem; font-weight: 700;
+  color: var(--slate-500); text-transform: uppercase;
+  letter-spacing: 0.5px; margin: 16px 0 8px;
+}
+
+/* ── FORM ── */
+label { display: block; font-size: 0.65rem; font-weight: 700; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+input, select {
+  width: 100%; background: var(--slate-50);
+  border: 1px solid var(--slate-200);
+  border-radius: 8px; padding: 9px 12px;
+  font-size: 14px; font-family: 'DM Sans', sans-serif;
+  height: 40px; outline: none; color: var(--blue-900);
+  transition: border-color 0.15s;
+  margin-bottom: 10px;
+}
+input:focus, select:focus { border-color: var(--blue-500); background: var(--white); }
+
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+/* ── RESULT GRID ── */
+.res-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
+.res-item {
+  background: var(--slate-50); padding: 10px 8px;
+  border-radius: 10px; text-align: center;
+  border: 1px solid var(--slate-200);
+}
+.res-label { font-size: 0.58rem; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.3px; display: block; margin-bottom: 4px; font-weight: 700; }
+.res-val { font-weight: 700; font-size: 0.88rem; color: var(--blue-900); font-family: 'DM Mono', monospace; }
+.res-item.highlight { background: var(--blue-50); border-color: var(--blue-100); }
+.res-item.highlight .res-val { color: var(--blue-700); }
+
+/* ── TOTAL BAR ── */
+.total-bar {
+  background: linear-gradient(135deg, var(--blue-800), var(--blue-900));
+  border-radius: 10px; padding: 12px 14px;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 10px;
+}
+.total-bar .t-label { font-size: 0.65rem; color: rgba(255,255,255,0.6); font-weight: 600; text-transform: uppercase; }
+.total-bar .t-val { font-size: 1.1rem; font-weight: 800; color: var(--white); font-family: 'DM Mono', monospace; }
+
+/* ── EMPLOYEE CARD ── */
+.emp-card {
+  background: var(--white); border-radius: var(--radius);
+  border: 1px solid var(--slate-200); margin-bottom: 10px;
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.emp-card-header {
+  background: var(--blue-900); padding: 10px 14px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.emp-name { font-size: 0.82rem; font-weight: 700; color: var(--white); }
+.emp-type-badge {
+  font-size: 0.6rem; font-weight: 700; padding: 3px 8px;
+  border-radius: 20px; text-transform: uppercase; letter-spacing: 0.4px;
+}
+.badge-s { background: rgba(59,130,246,0.25); color: #93c5fd; }
+.badge-a { background: rgba(245,158,11,0.25); color: #fcd34d; }
+.badge-c { background: rgba(34,197,94,0.25); color: #86efac; }
+.emp-body { padding: 12px; }
+.emp-delete {
+  background: none; border: none;
+  color: rgba(255,255,255,0.4); font-size: 1.2rem; cursor: pointer; padding: 2px 4px;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: none; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-weight: 700; cursor: pointer;
+  transition: all 0.15s; font-size: 0.85rem;
+}
+.btn-primary {
+  background: var(--blue-600); color: white;
+  width: 100%; padding: 13px; margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+}
+.btn-primary:hover { background: var(--blue-700); transform: translateY(-1px); }
+.btn-secondary {
+  background: var(--slate-100); color: var(--blue-900);
+  padding: 9px 14px;
+}
+.btn-outline {
+  background: transparent; color: var(--blue-600);
+  border: 1.5px solid var(--blue-200); padding: 9px 14px; font-size: 0.78rem;
+}
+.btn-danger { background: var(--red-100); color: var(--red-600); padding: 6px 10px; font-size: 0.75rem; }
+.btn-success { background: var(--green-600); color: white; width: 100%; padding: 13px; margin-bottom: 8px; }
+.btn-sm { padding: 7px 12px; font-size: 0.75rem; }
+
+/* ── DIFF TAGS ── */
+.diff-tag { font-size: 0.62rem; padding: 2px 7px; border-radius: 6px; font-weight: 700; display: inline-block; margin-top: 3px; font-family: 'DM Mono', monospace; }
+.pos { background: var(--green-100); color: var(--green-600); }
+.neg { background: var(--red-100); color: var(--red-600); }
+.neutral { background: var(--slate-200); color: var(--slate-700); }
+
+/* ── COMPARE TABLE ── */
+.compare-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 10px; }
+.compare-table th { 
+  background: var(--slate-100); padding: 8px 10px; text-align: left;
+  font-size: 0.62rem; text-transform: uppercase; color: var(--slate-500); font-weight: 700;
+}
+.compare-table td { padding: 9px 10px; border-bottom: 1px solid var(--slate-100); font-family: 'DM Mono', monospace; font-size: 0.8rem; }
+.compare-table tr:last-child td { border-bottom: none; }
+.compare-table .col-highlight { background: var(--blue-50); font-weight: 700; color: var(--blue-700); }
+
+/* ── HISTORY ── */
+.hist-item {
+  background: var(--white); border-radius: 10px; padding: 12px 14px;
+  margin-bottom: 8px; border: 1px solid var(--slate-200);
+  box-shadow: var(--shadow);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.hist-info .hist-name { font-size: 0.85rem; font-weight: 700; color: var(--blue-900); }
+.hist-info .hist-meta { font-size: 0.65rem; color: var(--slate-500); margin-top: 2px; }
+.hist-amount { font-size: 0.95rem; font-weight: 800; color: var(--blue-700); font-family: 'DM Mono', monospace; }
+.hist-date { font-size: 0.6rem; color: var(--slate-500); text-align: right; margin-top: 2px; }
+
+.empty-state {
+  text-align: center; padding: 40px 20px; color: var(--slate-500);
+}
+.empty-icon { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+.empty-text { font-size: 0.82rem; }
+
+/* ── FOOTER ── */
+.footer {
+  position: fixed; bottom: 0; left: 0; width: 100%;
+  background: var(--blue-900);
+  padding: 12px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+  z-index: 100;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.footer-label { font-size: 0.62rem; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+.footer-val { font-size: 1.45rem; font-weight: 900; color: #4ade80; font-family: 'DM Mono', monospace; line-height: 1; }
+.footer-sub { font-size: 0.6rem; color: rgba(255,255,255,0.3); }
+.footer-export-btn {
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+  color: white; border-radius: 8px; padding: 8px 12px;
+  font-size: 0.72rem; font-weight: 700; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── PDF FORM ── */
+.form-group { margin-bottom: 12px; }
+.form-group label { margin-bottom: 5px; }
+.divider { height: 1px; background: var(--slate-200); margin: 14px 0; }
+.info-box {
+  background: var(--blue-50); border: 1px solid var(--blue-100);
+  border-radius: 8px; padding: 10px 12px; margin-bottom: 12px;
+  font-size: 0.75rem; color: var(--blue-700);
+}
+.price-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--amber-100); color: #92400e;
+  font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;
+}
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(15,23,42,0.6); z-index: 500;
+  align-items: flex-end; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--white); border-radius: 20px 20px 0 0;
+  width: 100%; max-height: 85vh; overflow-y: auto;
+  padding: 20px 16px 32px;
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.modal-handle {
+  width: 36px; height: 4px; background: var(--slate-300);
+  border-radius: 2px; margin: 0 auto 16px;
+}
+.modal-title { font-size: 1rem; font-weight: 800; margin-bottom: 14px; color: var(--blue-900); }
+
+/* ── EXPORT PREVIEW ── */
+.export-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid var(--slate-100); font-size: 0.82rem;
+}
+.export-row:last-child { border-bottom: none; }
+.export-row .ename { color: var(--slate-700); font-weight: 500; }
+.export-row .eamount { font-family: 'DM Mono', monospace; font-weight: 700; color: var(--blue-900); }
+
+
+/* ── PAYMENT WALL ── */
+.paywall {
+  background: linear-gradient(135deg, #0f172a, #1e3a5f);
+  border-radius: var(--radius); padding: 20px 16px;
+  text-align: center; margin-bottom: 12px; color: white;
+}
+.paywall-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+.paywall-title { font-size: 1rem; font-weight: 800; margin-bottom: 6px; }
+.paywall-sub { font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 16px; }
+.paywall-price {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px; padding: 6px 14px; font-size: 0.85rem; font-weight: 700;
+  margin-bottom: 14px;
+}
+.paywall-price .amount { font-size: 1.2rem; color: #4ade80; }
+.btn-pay {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: white; width: 100%; padding: 14px; border-radius: 10px;
+  font-weight: 800; font-size: 0.9rem; border: none; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(22,163,74,0.4); margin-bottom: 8px;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-pay:hover { transform: translateY(-1px); }
+.secure-badge { font-size: 0.6rem; color: rgba(255,255,255,0.4); }
+
+/* ── CONTRACT TYPE SELECTOR ── */
+.contract-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.contract-type-btn {
+  border: 2px solid var(--slate-200); border-radius: 10px;
+  padding: 12px 8px; text-align: center; cursor: pointer;
+  background: var(--white); transition: all 0.15s;
+}
+.contract-type-btn .ct-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+.contract-type-btn .ct-label { font-size: 0.72rem; font-weight: 700; color: var(--slate-700); }
+.contract-type-btn .ct-price { font-size: 0.6rem; color: var(--slate-500); margin-top: 2px; }
+.contract-type-btn.selected { border-color: var(--blue-600); background: var(--blue-50); }
+.contract-type-btn.selected .ct-label { color: var(--blue-700); }
+
+/* ── STEP INDICATOR ── */
+.steps { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
+.step { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; }
+.step.done { background: var(--green-600); color: white; }
+.step.active { background: var(--blue-600); color: white; }
+.step.pending { background: var(--slate-200); color: var(--slate-500); }
+.step-line { flex: 1; height: 2px; background: var(--slate-200); }
+.step-line.done { background: var(--green-600); }
+
+/* ── UNLOCK BADGE ── */
+.unlocked-badge {
+  background: var(--green-100); border: 1px solid #bbf7d0;
+  border-radius: 8px; padding: 8px 12px; margin-bottom: 12px;
+  font-size: 0.75rem; color: var(--green-600); font-weight: 700;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ── CDD SPECIFIC ── */
+.cond-field { display: none; }
+.cond-field.show { display: block; }
+
+
+/* ── SAISIE BIDIRECTIONNELLE ── */
+.mode-tabs {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+.mode-tab {
+  flex: 1;
+  padding: 6px 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+  text-align: center;
+}
+.mode-tab.active {
+  background: white;
+  color: #0f172a;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+.smic-btn {
+  width: 100%;
+  padding: 7px;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.3px;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.smic-btn:active { opacity: 0.85; }
+
+/* ── HEADER PROFILE BTN ── */
+.header-profile-btn {
+  background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;
+  padding: 6px 11px; font-size: 0.72rem; font-weight: 700;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  white-space: nowrap;
+}
+.header-profile-btn:hover { background: rgba(255,255,255,0.18); }
+
+/* ── PROFIL MODAL ── */
+.profile-modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(15,23,42,0.6); z-index: 600;
+  align-items: flex-end; justify-content: center;
+}
+.profile-modal-overlay.open { display: flex; }
+.profile-modal {
+  background: var(--white); border-radius: 20px 20px 0 0;
+  width: 100%; max-height: 90vh; overflow-y: auto;
+  padding: 20px 16px 36px;
+  animation: slideUp 0.25s ease;
+}
+.profile-modal-title {
+  font-size: 1rem; font-weight: 800; margin-bottom: 4px; color: var(--blue-900);
+}
+.profile-modal-sub {
+  font-size: 0.72rem; color: var(--slate-500); margin-bottom: 16px;
+}
+.profile-saved-badge {
+  display: none; background: var(--green-100); border: 1px solid #bbf7d0;
+  border-radius: 8px; padding: 8px 12px; font-size: 0.75rem;
+  color: var(--green-600); font-weight: 700; margin-bottom: 12px;
+  align-items: center; gap: 6px;
+}
+.profile-saved-badge.show { display: flex; }
+
+/* ── MODIFICATION CONTRAT ── */
+.modif-banner {
+  background: var(--amber-100); border: 1px solid #fcd34d;
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 12px;
+  font-size: 0.78rem; color: #92400e;
+}
+.modif-banner strong { display: block; margin-bottom: 4px; font-size: 0.82rem; }
+.btn-modif {
+  background: #f59e0b; color: white; width: 100%; padding: 12px;
+  border-radius: 10px; border: none; font-weight: 800; font-size: 0.85rem;
+  cursor: pointer; font-family: 'DM Sans', sans-serif; margin-bottom: 8px;
+}
+.btn-modif:hover { background: #d97706; }
+
+
+/* ── EDT PLANNING RAPIDE ── */
+.edt-global-wrap { margin-bottom: 10px; }
+.edt-global-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.edt-gbtn {
+  font-size: 0.7rem; font-weight: 700; padding: 6px 10px;
+  border-radius: 8px; border: 1.5px solid var(--blue-100);
+  background: var(--blue-50); color: var(--blue-700);
+  cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap;
+}
+.edt-gbtn.danger { background: var(--red-100); border-color: #fecaca; color: var(--red-600); }
+.edt-gbtn:hover { background: var(--blue-100); }
+.edt-divider { height: 1px; background: var(--slate-200); margin: 12px 0; }
+.edt-row {
+  margin-bottom: 10px; padding: 8px 10px;
+  background: var(--slate-50); border-radius: 10px;
+  border: 1px solid var(--slate-200);
+}
+.edt-jour-label {
+  font-size: 0.72rem; font-weight: 800; color: var(--blue-900);
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+}
+.edt-presets { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 4px; }
+.edt-preset-btn {
+  font-size: 0.65rem; font-weight: 700; padding: 5px 8px;
+  border-radius: 6px; border: 1.5px solid var(--slate-200);
+  background: var(--white); color: var(--slate-600);
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all 0.12s;
+}
+.edt-preset-btn.active {
+  border-color: var(--blue-600); background: var(--blue-600);
+  color: white;
+}
+.edt-preset-btn:hover:not(.active) { border-color: var(--blue-300); background: var(--blue-50); }
+.edt-custom-input { margin-top: 5px; }
+.edt-custom-input input { font-size: 0.8rem; padding: 6px 10px; }
+.edt-copy-btn {
+  font-size: 0.62rem; font-weight: 700; padding: 3px 7px;
+  border-radius: 6px; border: 1px solid var(--slate-200);
+  background: var(--white); color: var(--slate-600);
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  white-space: nowrap; flex-shrink: 0;
+}
+.edt-copy-btn:hover { background: var(--blue-50); border-color: var(--blue-300); color: var(--blue-700); }
+.edt-val-preview {
+  font-size: 0.72rem; color: var(--slate-500); margin-top: 4px;
+  font-family: 'DM Mono', monospace;
+}
+
+
+/* ── HISTORIQUE CONTRATS ── */
+.hist-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.hist-tab-btn {
+  flex: 1; padding: 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 700;
+  border: 2px solid var(--slate-200); background: var(--white); color: var(--slate-600);
+  cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+}
+.hist-tab-btn.active { border-color: var(--blue-600); background: var(--blue-50); color: var(--blue-700); }
+
+.contract-hist-item {
+  background: var(--white); border-radius: var(--radius);
+  border: 1px solid var(--slate-200); padding: 14px;
+  margin-bottom: 10px; box-shadow: var(--shadow);
+}
+.contract-hist-header {
+  display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;
+}
+.contract-hist-type {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--blue-900); color: white;
+  font-size: 0.65rem; font-weight: 800; padding: 3px 8px; border-radius: 6px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.contract-hist-type.cdd { background: var(--amber-500); }
+.contract-hist-name { font-size: 0.88rem; font-weight: 800; color: var(--blue-900); margin: 6px 0 2px; }
+.contract-hist-meta { font-size: 0.7rem; color: var(--slate-500); }
+.contract-hist-date { font-size: 0.7rem; color: var(--slate-400); }
+.contract-hist-actions { display: flex; gap: 7px; margin-top: 10px; }
+.btn-hist-view {
+  flex: 1; padding: 9px; border-radius: 8px; border: none;
+  background: var(--blue-600); color: white;
+  font-size: 0.75rem; font-weight: 700; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-hist-view:hover { background: var(--blue-700); }
+.btn-hist-mail {
+  flex: 1; padding: 9px; border-radius: 8px;
+  border: 1.5px solid var(--slate-200); background: var(--white); color: var(--slate-700);
+  font-size: 0.75rem; font-weight: 700; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-hist-mail:hover { border-color: var(--blue-300); background: var(--blue-50); color: var(--blue-700); }
+.btn-hist-del {
+  padding: 9px 12px; border-radius: 8px;
+  border: 1.5px solid #fecaca; background: var(--red-100); color: var(--red-600);
+  font-size: 0.75rem; font-weight: 700; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+
+
+/* ── ONGLETS PREMIUM ── */
+.tab-premium {
+  position: relative;
+  background: linear-gradient(135deg, #1e3a5f, #2563eb) !important;
+  color: white !important;
+  font-weight: 800 !important;
+}
+.tab-premium.active {
+  background: linear-gradient(135deg, #1e40af, #3b82f6) !important;
+  color: white !important;
+}
+.tab-price {
+  display: inline-block;
+  background: #fbbf24;
+  color: #78350f;
+  font-size: 0.52rem;
+  font-weight: 900;
+  padding: 1px 4px;
+  border-radius: 4px;
+  margin-left: 4px;
+  vertical-align: middle;
+  line-height: 1.4;
+}
+
+/* ── ÉCRAN D'ACCUEIL ── */
+.welcome-overlay {
+  position: fixed; inset: 0; z-index: 10000;
+  background: linear-gradient(160deg, #0f172a 0%, #1e3a5f 60%, #0f172a 100%);
+  display: flex; flex-direction: column;
+  overflow-y: auto; padding: 24px 20px 32px;
+  font-family: 'DM Sans', sans-serif;
+}
+.welcome-logo {
+  text-align: center; margin-bottom: 6px;
+  font-size: 2.2rem; font-weight: 900;
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.welcome-tagline {
+  text-align: center; color: #94a3b8;
+  font-size: 0.78rem; margin-bottom: 28px;
+}
+.welcome-service-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px; padding: 16px;
+  margin-bottom: 12px; cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.welcome-service-card:hover, .welcome-service-card:active {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.25);
+  transform: translateY(-1px);
+}
+.welcome-service-card.premium {
+  background: linear-gradient(135deg, rgba(37,99,235,0.35), rgba(124,58,237,0.2));
+  border-color: rgba(99,179,237,0.4);
+}
+.wsc-icon { font-size: 1.8rem; flex-shrink: 0; margin-top: 2px; }
+.wsc-body { flex: 1; }
+.wsc-title { font-size: 0.92rem; font-weight: 800; color: white; margin-bottom: 3px; }
+.wsc-desc  { font-size: 0.7rem; color: #94a3b8; line-height: 1.5; }
+.wsc-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 7px; padding: 3px 9px; border-radius: 20px;
+  font-size: 0.65rem; font-weight: 800;
+}
+.wsc-badge.free    { background: #dcfce7; color: #166534; }
+.wsc-badge.paid    { background: #fef3c7; color: #92400e; }
+.welcome-cta {
+  margin-top: 8px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: white; border: none; width: 100%;
+  padding: 15px; border-radius: 12px;
+  font-size: 0.92rem; font-weight: 800;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  box-shadow: 0 8px 24px rgba(37,99,235,0.4);
+}
+.welcome-skip {
+  margin-top: 10px; background: transparent;
+  color: #64748b; border: none; width: 100%;
+  padding: 10px; font-size: 0.75rem; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── BANNIÈRE CTA dans simulation ── */
+.upsell-banner {
+  background: linear-gradient(135deg, #1e3a5f, #1e40af);
+  border-radius: var(--radius); padding: 16px;
+  margin-top: 14px; color: white;
+  border: 1px solid rgba(99,179,237,0.3);
+}
+.upsell-banner-title {
+  font-size: 0.88rem; font-weight: 800; margin-bottom: 4px;
+}
+.upsell-banner-sub {
+  font-size: 0.7rem; color: #93c5fd; margin-bottom: 12px; line-height: 1.5;
+}
+.upsell-banner-btns { display: flex; gap: 8px; }
+.upsell-btn-promesse {
+  flex: 1; padding: 10px 8px; border-radius: 8px;
+  background: rgba(251,191,36,0.15); border: 1.5px solid #fbbf24;
+  color: #fde68a; font-size: 0.72rem; font-weight: 800;
+  cursor: pointer; font-family: 'DM Sans', sans-serif; text-align: center;
+}
+.upsell-btn-promesse:hover { background: rgba(251,191,36,0.25); }
+.upsell-btn-contrat {
+  flex: 1; padding: 10px 8px; border-radius: 8px;
+  background: rgba(99,179,237,0.15); border: 1.5px solid #60a5fa;
+  color: #bae6fd; font-size: 0.72rem; font-weight: 800;
+  cursor: pointer; font-family: 'DM Sans', sans-serif; text-align: center;
+}
+.upsell-btn-contrat:hover { background: rgba(99,179,237,0.25); }
+
+/* Scrollbar slim */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: 2px; }
+
+/* ── NOTIFICATION ── */
+.toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: var(--blue-900); color: white;
+  padding: 10px 18px; border-radius: 20px;
+  font-size: 0.8rem; font-weight: 600;
+  box-shadow: var(--shadow-lg); z-index: 1000;
+  opacity: 0; transition: opacity 0.2s;
+  pointer-events: none; white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" id="logo-tap" onclick="adminTapDetect()" style="cursor:default;user-select:none">
+    <div class="logo-icon" style="display:flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="34" height="34" style="flex-shrink:0;margin-right:2px"><defs><linearGradient id="cslg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#60a5fa"/><stop offset="100%" style="stop-color:#3b82f6"/></linearGradient></defs><rect width="36" height="36" rx="9" fill="rgba(255,255,255,0.12)"/><circle cx="18" cy="12" r="5" fill="white" opacity="0.95"/><path d="M9 28 Q9 20 18 20 Q27 20 27 28" fill="white" opacity="0.95"/><circle cx="27.5" cy="26.5" r="6.5" fill="#f59e0b"/><text x="27.5" y="30.5" text-anchor="middle" font-size="8.5" font-weight="900" fill="white" font-family="Arial,sans-serif">€</text></svg></div>
+    <span class="logo-text">CoûtSalarié</span>
+    <span class="logo-badge">PRO</span><span style="font-size:0.5rem;color:rgba(255,255,255,0.3);margin-left:6px">v4.0</span>
+  </div>
+  <button class="header-profile-btn" onclick="openProfileModal()">🏢 Mon profil</button>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="showPage('simulation', this)">📊 Simulation</div>
+  <div class="tab" onclick="showPage('comparateur', this)">⚖️ Comparateur</div>
+  <div class="tab tab-premium" onclick="showPage('promesse', this)">✉️ Promesse<span class="tab-price" id="nav-prix-promesse">7,99€</span></div>
+  <div class="tab tab-premium" onclick="showPage('contrats', this)">📝 Contrat<span class="tab-price" id="nav-prix-contrat">19,99€</span></div>
+  <div class="tab" onclick="showPage('historique', this)">📋 Historique</div>
+</div>
+
+<!-- ════════════════ PAGE SIMULATION ════════════════ -->
+<div class="page active" id="page-simulation">
+  <div id="emp-list"></div>
+  <button class="btn btn-primary" onclick="addEmployee()">＋ Ajouter un employé</button>
+
+  <!-- Résumé équipe -->
+  <div class="section-label">Résumé de l'équipe</div>
+  <div class="card" id="summary-card" style="display:none">
+    <div class="res-grid" style="grid-template-columns:1fr 1fr">
+      <div class="res-item"><span class="res-label">Nb employés</span><span class="res-val" id="s-count">0</span></div>
+      <div class="res-item highlight"><span class="res-label">Masse brute</span><span class="res-val" id="s-brut">0 €</span></div>
+      <div class="res-item"><span class="res-label">Charges pat.</span><span class="res-val" id="s-pat">0 €</span></div>
+      <div class="res-item highlight"><span class="res-label">Coût total</span><span class="res-val" id="s-total">0 €</span></div>
+    </div>
+    <button class="btn btn-outline" style="width:100%;margin-top:12px" onclick="openExportModal()">📊 Exporter le bilan</button>
+  </div>
+
+  <!-- Bannière upsell -->
+  <div class="upsell-banner">
+    <div class="upsell-banner-title">📄 Vous recrutez ?</div>
+    <div class="upsell-banner-sub">Générez vos documents RH officiels en quelques minutes, directement depuis vos données.</div>
+    <div class="upsell-banner-btns">
+      <button class="upsell-btn-promesse" onclick="upsellGo('promesse')">✉️ Promesse d'embauche<br><strong id="upsell-prix-promesse">7,99 €</strong></button>
+      <button class="upsell-btn-contrat"  onclick="upsellGo('contrats')">📝 Contrat CDI / CDD<br><strong id="upsell-prix-contrat">19,99 €</strong></button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ PAGE COMPARATEUR ════════════════ -->
+<div class="page" id="page-comparateur">
+  <div class="section-label">Comparateur de contrats</div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">Paramètres</span></div>
+    <label>Salaire Net de référence (€)</label>
+    <input type="number" id="cmp-net" value="1800" oninput="runComparison()">
+    <div class="row-2">
+      <div>
+        <label>Heures / semaine</label>
+        <input type="number" id="cmp-h" value="35" oninput="runComparison()">
+      </div>
+      <div>
+        <label>Ancienneté (mois)</label>
+        <input type="number" id="cmp-anc" value="0" oninput="runComparison()">
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Résultats comparatifs</div>
+  <div class="card">
+    <table class="compare-table" id="cmp-table">
+      <thead>
+        <tr>
+          <th>Contrat</th>
+          <th>Net</th>
+          <th>Brut</th>
+          <th>Patronal</th>
+          <th>Coût total</th>
+        </tr>
+      </thead>
+      <tbody id="cmp-body"></tbody>
+    </table>
+  </div>
+
+  <div class="section-label">Simulation Prorata horaire</div>
+  <div class="card">
+    <div class="row-2">
+      <div>
+        <label>H. Départ</label>
+        <input type="number" id="p-h1" value="35" oninput="runProrata()">
+      </div>
+      <div>
+        <label>H. Arrivée</label>
+        <input type="number" id="p-h2" value="24" oninput="runProrata()">
+      </div>
+    </div>
+    <div class="res-grid" style="grid-template-columns:1fr 1fr">
+      <div class="res-item">
+        <span class="res-label">Nouveau Net</span>
+        <span class="res-val" id="p-net">—</span>
+        <span id="p-dnet" class="diff-tag neutral">—</span>
+      </div>
+      <div class="res-item highlight">
+        <span class="res-label">Nouveau Coût</span>
+        <span class="res-val" id="p-cost">—</span>
+        <span id="p-dcost" class="diff-tag neutral">—</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ PAGE HISTORIQUE ════════════════ -->
+<div class="page" id="page-historique">
+  <div class="hist-tabs">
+    <button class="hist-tab-btn active" id="htab-simul" onclick="switchHistTab('simul')">📊 Simulations</button>
+    <button class="hist-tab-btn" id="htab-promesses" onclick="switchHistTab('promesses')">✉️ Promesses</button>
+    <button class="hist-tab-btn" id="htab-contrats" onclick="switchHistTab('contrats')">📝 Contrats</button>
+  </div>
+  <!-- Simulations -->
+  <div id="hist-simul-panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="section-label" style="margin:0">Simulations sauvegardées</div>
+      <button class="btn btn-danger btn-sm" onclick="clearHistory()">Tout effacer</button>
+    </div>
+    <div id="hist-list"></div>
+  </div>
+  <!-- Promesses -->
+  <div id="hist-promesses-panel" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="section-label" style="margin:0">Promesses d'embauche générées</div>
+      <button class="btn btn-danger btn-sm" onclick="clearPromesses()">Tout effacer</button>
+    </div>
+    <div id="hist-promises-list"></div>
+  </div>
+  <!-- Contrats payés -->
+  <div id="hist-contrats-panel" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="section-label" style="margin:0">Contrats générés</div>
+      <button class="btn btn-danger btn-sm" onclick="clearContracts()">Tout effacer</button>
+    </div>
+    <div id="hist-contracts-list"></div>
+  </div>
+</div>
+
+<!-- ════════════════ PAGE PROMESSE PDF ════════════════ -->
+<div class="page" id="page-promesse">
+  <div id="prom-container"></div>
+</div>
+
+
+<!-- ════════════════ PAGE CONTRATS ════════════════ -->
+<div class="page" id="page-contrats">
+  <div id="wiz-container"></div>
+</div>
+
+
+<!-- ════════════════ MODAL PROFIL EMPLOYEUR ════════════════ -->
+<div class="profile-modal-overlay" id="profile-modal" onclick="closeProfileModal(event)">
+  <div class="profile-modal">
+    <div class="modal-handle"></div>
+    <div class="profile-modal-title">🏢 Profil employeur</div>
+    <div class="profile-modal-sub">Ces informations seront pré-remplies automatiquement dans tous vos contrats.</div>
+    <div class="profile-saved-badge" id="profile-saved-badge">✅ Profil enregistré !</div>
+
+    <div class="form-group">
+      <label>Civilité du signataire</label>
+      <select id="prof-civilite"><option value="M.">M.</option><option value="Mme">Mme</option></select>
+    </div>
+    <div class="row-2">
+      <div class="form-group">
+        <label>Prénom</label>
+        <input type="text" id="prof-prenom" placeholder="Jean">
+      </div>
+      <div class="form-group">
+        <label>Nom</label>
+        <input type="text" id="prof-nom" placeholder="Dupont">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Fonction</label>
+      <input type="text" id="prof-fonction" placeholder="Gérant, Président...">
+    </div>
+    <div class="form-group">
+      <label>Nom de la société (dénomination sociale)</label>
+      <input type="text" id="prof-denomination" placeholder="SARL Martin &amp; Fils">
+    </div>
+    <div class="form-group">
+      <label>Adresse du siège social</label>
+      <input type="text" id="prof-adresse" placeholder="12 rue de la Paix, 75001 Paris">
+    </div>
+    <div class="row-2">
+      <div class="form-group">
+        <label>SIRET</label>
+        <input type="text" id="prof-urssaf" placeholder="123 456 789 00012">
+      </div>
+      <div class="form-group">
+        <label>Convention collective habituelle</label>
+        <input type="text" id="prof-cc" placeholder="IDCC 1090">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Lieu habituel de travail (si différent du siège)</label>
+      <input type="text" id="prof-etablissement" placeholder="Centre com Beausevran, 93270 Sevran">
+    </div>
+
+    <div class="divider"></div>
+    <div style="font-size:0.78rem;font-weight:700;color:var(--blue-900);margin-bottom:8px">⏰ Horaires par défaut (emploi du temps)</div>
+    <div style="font-size:0.72rem;color:var(--slate-500);margin-bottom:10px">Ces horaires seront utilisés pour le remplissage rapide "Journée" dans vos contrats.</div>
+    <div class="row-2">
+      <div class="form-group">
+        <label>Matin (ex : 8h00–12h30)</label>
+        <input type="text" id="prof-horaire-matin" placeholder="8h00–12h30">
+      </div>
+      <div class="form-group">
+        <label>Après-midi (ex : 14h00–17h00)</label>
+        <input type="text" id="prof-horaire-apmidi" placeholder="14h00–17h00">
+      </div>
+    </div>
+
+    <button class="btn btn-primary" style="margin-bottom:8px" onclick="saveProfile()">💾 Enregistrer le profil</button>
+    <button class="btn btn-secondary" style="width:100%" onclick="closeProfileModal()">Fermer</button>
+  </div>
+</div>
+
+<!-- ════════════════ FOOTER ════════════════ -->
+<div class="footer">
+  <div>
+    <div class="footer-label">Masse salariale</div>
+    <div class="footer-val" id="grand-total">0 €</div>
+    <div class="footer-sub" id="footer-count">0 employé</div>
+  </div>
+  <button class="footer-export-btn" onclick="openExportModal()">📊 Bilan</button>
+</div>
+
+<!-- ════════════════ MODAL EXPORT ════════════════ -->
+<div class="modal-overlay" id="export-modal" onclick="closeExportModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📊 Bilan Masse Salariale</div>
+    <div id="export-content"></div>
+    <div class="divider"></div>
+    <button class="btn btn-primary" onclick="printBilan()">🖨️ Imprimer / Exporter PDF</button>
+    <button class="btn btn-secondary" style="width:100%" onclick="closeExportModal()">Fermer</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA & STATE
+// ═══════════════════════════════════════════
+let employees = [];
+
+// ═══════════════════════════════════════════════════════════════
+// ⚙️ CONFIG CENTRALE — modifiable depuis le panneau admin
+// ═══════════════════════════════════════════════════════════════
+const ADMIN_KEY   = 'spp_admin_config';
+const ADMIN_PASS  = 'simupro2025'; // mot de passe par défaut — changeable dans l'admin
+
+const CONFIG_DEFAULT = {
+  // Prix
+  prix_promesse:  '7,99',
+  prix_contrat:   '19,99',
+  // Promotions
+  promo_active:      false,
+  promo_label:       '',          // ex : "🎉 -30% ce week-end !"
+  promo_prix_promesse: '',        // ex : "5,99" (vide = pas de promo)
+  promo_prix_contrat:  '',        // ex : "13,99"
+  promo_fin:           '',        // ex : "2025-12-31" pour compte à rebours
+  // Textes personnalisables
+  app_nom:         'CoûtSalarié Pro',
+  app_tagline:     'Simulation charges · Contrats CDI/CDD · Documents officiels',
+  welcome_actif:   true,          // afficher l'écran d'accueil
+  // Mot de passe admin
+  admin_pass:      'simupro2025',
+};
+
+function loadConfig() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(ADMIN_KEY) || '{}');
+    return Object.assign({}, CONFIG_DEFAULT, saved);
+  } catch { return CONFIG_DEFAULT; }
+}
+
+function saveConfig(cfg) {
+  localStorage.setItem(ADMIN_KEY, JSON.stringify(cfg));
+}
+
+// Alias court
+function cfg(key) { return loadConfig()[key]; }
+
+// Prix affiché (avec promo si active)
+function prixPromesse() {
+  const c = loadConfig();
+  if (c.promo_active && c.promo_prix_promesse) return c.promo_prix_promesse;
+  return c.prix_promesse;
+}
+function prixContrat() {
+  const c = loadConfig();
+  if (c.promo_active && c.promo_prix_contrat) return c.promo_prix_contrat;
+  return c.prix_contrat;
+}
+function prixLabel(p) { return p.replace('.', ',') + ' €'; }
+
+let history = JSON.parse(localStorage.getItem('spp_history') || '[]');
+
+// ═══════════════════════════════════════════
+// CALC ENGINE — interpolation calibrée sur données URSSAF réelles
+// Erreur max ±4€ sur tous les niveaux testés (mars 2025)
+// Points de référence mon-entreprise.urssaf.fr :
+//   net 1500 → brut 1923, coût 2098
+//   net 1802 → brut 2304, coût 2815
+//   net 2000 → brut 2554, coût 3257
+//   net 3000 → brut 3818, coût 5300
+// ═══════════════════════════════════════════
+const SMIC_BRUT = 1823.03; // SMIC 2026
+
+// Taux salarial interpolé (varie légèrement selon la tranche retraite compl.)
+function tauxSalFromBrut(br) {
+  const pts = [[1923,0.220],[2304,0.2179],[2554,0.2169],[3818,0.2142]];
+  if (br <= pts[0][0]) return pts[0][1];
+  if (br >= pts[pts.length-1][0]) return pts[pts.length-1][1];
+  for (let i = 0; i < pts.length-1; i++) {
+    const [b0,t0] = pts[i], [b1,t1] = pts[i+1];
+    if (br >= b0 && br <= b1) return t0 + (br-b0)/(b1-b0)*(t1-t0);
+  }
+  return 0.218;
+}
+
+// Taux patronal effectif (après Fillon) interpolé par tranche de ratio brut/SMIC
+// Calibré directement sur les valeurs URSSAF mesurées
+function tauxPatEff(ratio) {
+  const bps = [
+    [0.00, 0.000], [1.00, 0.031], [1.07, 0.091],
+    [1.28, 0.222], [1.42, 0.275], [1.60, 0.318],
+    [2.12, 0.388], [2.50, 0.420], [3.00, 0.430]
+  ];
+  if (ratio <= bps[0][0]) return bps[0][1];
+  if (ratio >= bps[bps.length-1][0]) return bps[bps.length-1][1];
+  for (let i = 0; i < bps.length-1; i++) {
+    const [r0,p0] = bps[i], [r1,p1] = bps[i+1];
+    if (ratio >= r0 && ratio <= r1) return p0 + (ratio-r0)/(r1-r0)*(p1-p0);
+  }
+  return 0.33;
+}
+
+function calcFromNet(net, type) {
+  if (!net || net <= 0) return { net: 0, br: 0, pat: 0, tot: 0 };
+
+  if (type === 'a') {
+    const br  = net;
+    const seuil = SMIC_BRUT * 0.79;
+    const pat = br <= seuil ? 0 : (br - seuil) * 0.10;
+    return { net: Math.round(net), br: Math.round(br), pat: Math.round(pat), tot: Math.round(br + pat) };
+  }
+
+  // 1. Estimer brut (2 passes pour affiner le taux salarial)
+  let br = net / (1 - 0.218);
+  br = net / (1 - tauxSalFromBrut(br));
+
+  // 2. Taux patronal effectif selon ratio brut/SMIC
+  const ratio = br / SMIC_BRUT;
+  const pat = br * tauxPatEff(ratio);
+
+  return {
+    net: Math.round(net),
+    br:  Math.round(br),
+    pat: Math.round(pat),
+    tot: Math.round(br + pat)
+  };
+}
+
+function calcFromCout(cout, type) {
+  if (!cout || cout <= 0) return { net:0, br:0, pat:0, tot:0 };
+  let lo = 0, hi = cout * 1.5, br = cout * 0.72;
+  for (let i = 0; i < 50; i++) {
+    const r = calcFromBrut(br, type);
+    if (Math.abs(r.tot - cout) < 0.5) break;
+    if (r.tot < cout) lo = br; else hi = br;
+    br = (lo + hi) / 2;
+  }
+  return calcFromBrut(br, type);
+}
+
+function getResult(emp) {
+  const v = emp.inputVal || 0;
+  if (emp.inputMode === 'brut') return calcFromBrut(v, emp.type);
+  if (emp.inputMode === 'cout') return calcFromCout(v, emp.type);
+  return calcFromNet(v, emp.type); // défaut : net
+}
+
+function calcFromBrut(brut, type) {
+  const ts = type === 'a' ? 0 : tauxSalFromBrut(brut);
+  const net = type === 'a' ? brut : brut * (1 - ts);
+  return calcFromNet(net, type);
+}
+
+// ═══════════════════════════════════════════
+// EMPLOYEES
+// ═══════════════════════════════════════════
+function addEmployee() {
+  const id = Date.now();
+  employees.push({ id, type: 's', inputMode: 'net', inputVal: 1800 });
+  renderEmployees();
+}
+
+function removeEmployee(id) {
+  employees = employees.filter(e => e.id !== id);
+  renderEmployees();
+}
+
+function updateEmployee(id, field, val) {
+  const emp = employees.find(e => e.id === id);
+  if (!emp) return;
+  emp[field] = val;
+  // Si changement de type : on re-render la carte entière (pas d'input actif à préserver)
+  if (field === 'type') {
+    renderCard(id);
+  } else {
+    // Changement de valeur numérique : on ne touche PAS au DOM de l'input,
+    // on met à jour uniquement les spans de résultats
+    updateCardResults(id);
+  }
+  updateTotals();
+}
+
+function updateCardResults(id) {
+  const emp = employees.find(e => e.id === id);
+  if (!emp) return;
+  const r = getResult(emp);
+  // Mettre à jour les spans résultats
+  const sb = document.getElementById('res-br-'+id);
+  const sp = document.getElementById('res-pat-'+id);
+  const st = document.getElementById('res-tot-'+id);
+  if(sb) sb.textContent = r.br.toLocaleString('fr-FR')+' €';
+  if(sp) sp.textContent = r.pat.toLocaleString('fr-FR')+' €';
+  if(st) st.textContent = r.tot.toLocaleString('fr-FR')+' €';
+  const net_el = document.getElementById('rv-net-' + id);
+  const br_el  = document.getElementById('rv-br-'  + id);
+  const pat_el = document.getElementById('rv-pat-' + id);
+  const tot_el = document.getElementById('rv-tot-' + id);
+  if (net_el) net_el.textContent = r.net.toLocaleString('fr-FR') + ' €';
+  if (br_el)  br_el.textContent  = r.br.toLocaleString('fr-FR')  + ' €';
+  if (pat_el) pat_el.textContent = r.pat.toLocaleString('fr-FR') + ' €';
+  if (tot_el) tot_el.textContent = r.tot.toLocaleString('fr-FR') + ' €';
+}
+function setMode(id, mode) {
+  const emp = employees.find(e => e.id === id);
+  if (!emp) return;
+  // Convertir la valeur actuelle dans le nouveau mode
+  const r = getResult(emp);
+  emp.inputMode = mode;
+  emp.inputVal  = mode === 'brut' ? r.br : mode === 'cout' ? r.tot : r.net;
+  renderCard(id);
+}
+
+const TYPE_LABEL = { s: 'CDI', a: 'Apprenti', c: 'CDD' };
+const TYPE_BADGE = { s: 'badge-s', a: 'badge-a', c: 'badge-c' };
+
+function renderEmployees() {
+  const list = document.getElementById('emp-list');
+  list.innerHTML = '';
+  employees.forEach(emp => {
+    const div = document.createElement('div');
+    div.className = 'emp-card';
+    div.id = 'emp-' + emp.id;
+    list.appendChild(div);
+    renderCard(emp.id);
+  });
+  updateTotals();
+}
+
+function setEmpInput(id, mode, val) {
+  const emp = employees.find(e => e.id === id);
+  if (!emp) return;
+  emp.inputMode = mode;
+  emp.inputVal  = val;
+  const r = getResult(emp);
+  if (mode !== 'net')  { const el = document.getElementById('inp-net-'+id);  if(el && document.activeElement!==el) el.value = r.net  || ''; }
+  if (mode !== 'brut') { const el = document.getElementById('inp-brut-'+id); if(el && document.activeElement!==el) el.value = r.br   || ''; }
+  if (mode !== 'cout') { const el = document.getElementById('inp-cout-'+id); if(el && document.activeElement!==el) el.value = r.tot  || ''; }
+  updateCardResults(id);
+  updateTotals();
+}
+
+function setSMIC(id) {
+  const emp = employees.find(e => e.id === id);
+  if (!emp) return;
+  emp.inputMode = 'brut';
+  emp.inputVal  = SMIC_BRUT;
+  renderCard(id);
+  updateTotals();
+}
+
+function renderCard(id) {
+  const emp = employees.find(e => e.id === id);
+  if (!emp) return;
+  const r = getResult(emp);
+  const el = document.getElementById('emp-' + id);
+  if (!el) return;
+  const vNet  = emp.inputMode==='net'  ? emp.inputVal : (r.net  || '');
+  const vBrut = emp.inputMode==='brut' ? emp.inputVal : (r.br   || '');
+  const vCout = emp.inputMode==='cout' ? emp.inputVal : (r.tot  || '');
+  const cNet  = emp.inputMode==='net'  ? '#2563eb' : '#e2e8f0';
+  const cBrut = emp.inputMode==='brut' ? '#7c3aed' : '#e2e8f0';
+  const cCout = emp.inputMode==='cout' ? '#16a34a' : '#e2e8f0';
+  el.innerHTML = `
+    <div class="emp-card-header">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="emp-name">Employé</span>
+        <span class="emp-type-badge ${TYPE_BADGE[emp.type]}">${TYPE_LABEL[emp.type]}</span>
+      </div>
+      <button class="emp-delete" onclick="removeEmployee(${id})">✕</button>
+    </div>
+    <div class="emp-body">
+      <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:12px">
+        <div style="flex:1">
+          <label>Type de contrat</label>
+          <select onchange="updateEmployee(${id},'type',this.value)">
+            <option value="s" ${emp.type==='s'?'selected':''}>CDI Standard</option>
+            <option value="c" ${emp.type==='c'?'selected':''}>CDD</option>
+            <option value="a" ${emp.type==='a'?'selected':''}>Apprenti</option>
+          </select>
+        </div>
+        <button onclick="setSMIC(${id})" style="padding:9px 12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;border:none;border-radius:8px;font-size:0.72rem;font-weight:800;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;flex-shrink:0;box-shadow:0 2px 8px rgba(37,99,235,0.3)">
+          SMIC 2026
+        </button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">
+        <div>
+          <label style="font-size:0.63rem;font-weight:800;color:${emp.inputMode==='net'?'#2563eb':'#94a3b8'};display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.03em">💰 Net</label>
+          <input id="inp-net-${id}" type="number" value="${vNet}" placeholder="Net €"
+            style="width:100%;padding:8px 6px;border:2.5px solid ${cNet};border-radius:8px;font-size:0.8rem;font-weight:700;box-sizing:border-box;font-family:'DM Mono',monospace;outline:none;transition:border-color 0.15s"
+            oninput="setEmpInput(${id},'net',parseFloat(this.value)||0)"
+            onfocus="this.style.borderColor='#2563eb'"
+            onblur="if(employees.find(e=>e.id===${id})?.inputMode!=='net') this.style.borderColor='#e2e8f0'"
+          >
+        </div>
+        <div>
+          <label style="font-size:0.63rem;font-weight:800;color:${emp.inputMode==='brut'?'#7c3aed':'#94a3b8'};display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.03em">📋 Brut</label>
+          <input id="inp-brut-${id}" type="number" value="${vBrut}" placeholder="Brut €"
+            style="width:100%;padding:8px 6px;border:2.5px solid ${cBrut};border-radius:8px;font-size:0.8rem;font-weight:700;box-sizing:border-box;font-family:'DM Mono',monospace;outline:none;transition:border-color 0.15s"
+            oninput="setEmpInput(${id},'brut',parseFloat(this.value)||0)"
+            onfocus="this.style.borderColor='#7c3aed'"
+            onblur="if(employees.find(e=>e.id===${id})?.inputMode!=='brut') this.style.borderColor='#e2e8f0'"
+          >
+        </div>
+        <div>
+          <label style="font-size:0.63rem;font-weight:800;color:${emp.inputMode==='cout'?'#16a34a':'#94a3b8'};display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.03em">🏢 Coût</label>
+          <input id="inp-cout-${id}" type="number" value="${vCout}" placeholder="Coût €"
+            style="width:100%;padding:8px 6px;border:2.5px solid ${cCout};border-radius:8px;font-size:0.8rem;font-weight:700;box-sizing:border-box;font-family:'DM Mono',monospace;outline:none;transition:border-color 0.15s"
+            oninput="setEmpInput(${id},'cout',parseFloat(this.value)||0)"
+            onfocus="this.style.borderColor='#16a34a'"
+            onblur="if(employees.find(e=>e.id===${id})?.inputMode!=='cout') this.style.borderColor='#e2e8f0'"
+          >
+        </div>
+      </div>
+      <div class="res-grid">
+        <div class="res-item"><span class="res-label">Brut</span><span class="res-val" id="res-br-${id}">${r.br.toLocaleString('fr-FR')} €</span></div>
+        <div class="res-item"><span class="res-label">Patronal</span><span class="res-val" id="res-pat-${id}">${r.pat.toLocaleString('fr-FR')} €</span></div>
+        <div class="res-item highlight"><span class="res-label">Coût total</span><span class="res-val" id="res-tot-${id}">${r.tot.toLocaleString('fr-FR')} €</span></div>
+      </div>
+    </div>`;
+}
+function updateTotals() {
+  let totalTot = 0, totalBrut = 0, totalPat = 0;
+  employees.forEach(emp => {
+    const r = getResult(emp);
+    totalBrut += r.br;
+    totalPat += r.pat;
+    totalTot += r.tot;
+  });
+  const n = employees.length;
+  document.getElementById('grand-total').textContent = totalTot.toLocaleString('fr-FR') + ' €';
+  document.getElementById('footer-count').textContent = n + ' employé' + (n > 1 ? 's' : '');
+
+  const sc = document.getElementById('summary-card');
+  if (n > 0) {
+    sc.style.display = 'block';
+    document.getElementById('s-count').textContent = n;
+    document.getElementById('s-brut').textContent = totalBrut.toLocaleString('fr-FR') + ' €';
+    document.getElementById('s-pat').textContent = totalPat.toLocaleString('fr-FR') + ' €';
+    document.getElementById('s-total').textContent = totalTot.toLocaleString('fr-FR') + ' €';
+  } else {
+    sc.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════
+// COMPARATEUR
+// ═══════════════════════════════════════════
+function runComparison() {
+  const net = parseFloat(document.getElementById('cmp-net').value) || 0;
+  const types = [
+    { key:'s', label:'CDI Standard', net },
+    { key:'c', label:'CDD (+10% précarité)', net: net * 1.1 },
+    { key:'a', label:'Apprenti (<26 ans)', net: net * 0.43 }
+  ];
+
+  const tbody = document.getElementById('cmp-body');
+  tbody.innerHTML = '';
+  types.forEach((t, i) => {
+    const r = calcFromNet(t.net, t.key);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight:700;font-size:0.75rem">${t.label}</td>
+      <td class="${i===0?'col-highlight':''}">${r.net.toLocaleString('fr-FR')} €</td>
+      <td>${r.br.toLocaleString('fr-FR')} €</td>
+      <td>${r.pat.toLocaleString('fr-FR')} €</td>
+      <td class="${i===2?'col-highlight':''}" style="font-weight:700">${r.tot.toLocaleString('fr-FR')} €</td>`;
+    tbody.appendChild(tr);
+  });
+
+  runProrata();
+}
+
+function runProrata() {
+  const net = parseFloat(document.getElementById('cmp-net').value) || 0;
+  const h1 = parseFloat(document.getElementById('p-h1').value) || 1;
+  const h2 = parseFloat(document.getElementById('p-h2').value) || 0;
+  const nNet = Math.round(net * (h2 / h1));
+  const c1 = calcFromNet(net, 's').tot;
+  const c2 = calcFromNet(nNet, 's').tot;
+  document.getElementById('p-net').textContent = nNet.toLocaleString('fr-FR') + ' €';
+  document.getElementById('p-cost').textContent = c2.toLocaleString('fr-FR') + ' €';
+  const dn = nNet - net;
+  const dc = c2 - c1;
+  const dnEl = document.getElementById('p-dnet');
+  dnEl.textContent = (dn >= 0 ? '+' : '') + dn.toLocaleString('fr-FR') + ' €';
+  dnEl.className = 'diff-tag ' + (dn >= 0 ? 'pos' : 'neg');
+  const dcEl = document.getElementById('p-dcost');
+  dcEl.textContent = (dc >= 0 ? '+' : '') + dc.toLocaleString('fr-FR') + ' €';
+  dcEl.className = 'diff-tag ' + (dc <= 0 ? 'pos' : 'neg');
+}
+
+// ═══════════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════════
+function saveToHistory() {
+  const entry = {
+    id: Date.now(),
+    date: new Date().toLocaleDateString('fr-FR'),
+    time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}),
+    employees: employees.length,
+    total: employees.reduce((s, e) => s + calcFromNet(e.net, e.type).tot, 0),
+    types: employees.map(e => TYPE_LABEL[e.type]).join(', ') || 'Aucun'
+  };
+  history.unshift(entry);
+  if (history.length > 20) history = history.slice(0, 20);
+  localStorage.setItem('spp_history', JSON.stringify(history));
+  renderHistory();
+  showToast('✅ Simulation sauvegardée');
+}
+
+function clearHistory() {
+  if (!confirm('Effacer tout l\'historique ?')) return;
+  history = [];
+  localStorage.removeItem('spp_history');
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('hist-list');
+  if (!history.length) {
+    list.innerHTML = `<div class="empty-state"><span class="empty-icon">📋</span><p class="empty-text">Aucune simulation sauvegardée.<br>Ajoutez des employés et enregistrez !</p></div>`;
+    return;
+  }
+  list.innerHTML = history.map(h => `
+    <div class="hist-item">
+      <div class="hist-info">
+        <div class="hist-name">${h.employees} employé${h.employees>1?'s':''} — ${h.types}</div>
+        <div class="hist-meta">${h.date} à ${h.time}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="hist-amount">${h.total.toLocaleString('fr-FR')} €</div>
+        <div class="hist-date">Coût total</div>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+// PDF GENERATION
+// ═══════════════════════════════════════════
+function g(id) { return document.getElementById(id).value || '___________'; }
+
+function generatePDF() {
+  const empName = g('pdf-emp-name');
+  const siret = g('pdf-siret');
+  const cc = g('pdf-cc');
+  const empAddr = g('pdf-emp-addr');
+  const signer = g('pdf-signer');
+  const first = g('pdf-first');
+  const last = g('pdf-last');
+  const candAddr = g('pdf-cand-addr');
+  const poste = g('pdf-poste');
+  const contrat = g('pdf-contrat');
+  const sal = g('pdf-sal');
+  const date = document.getElementById('pdf-date').value
+    ? new Date(document.getElementById('pdf-date').value).toLocaleDateString('fr-FR') : '___________';
+  const heures = g('pdf-heure');
+  const lieu = g('pdf-lieu');
+  const today = new Date().toLocaleDateString('fr-FR');
+
+  const html = `<!DOCTYPE html><html lang="fr"><head>
+  <meta charset="UTF-8">
+  <title>Promesse d'embauche — ${first} ${last}</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 750px; margin: 40px auto; padding: 40px; color: #1a1a2e; font-size: 13px; line-height: 1.7; }
+    h1 { text-align:center; font-size:18px; text-transform:uppercase; letter-spacing:2px; margin-bottom:6px; }
+    .subtitle { text-align:center; font-size:11px; color:#666; margin-bottom:30px; }
+    .header-box { display:flex; justify-content:space-between; margin-bottom:28px; font-size:12px; }
+    .box { border:1px solid #ccc; padding:12px 16px; border-radius:4px; flex:1; margin:0 5px; }
+    .box h3 { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#666; margin:0 0 6px; }
+    .box p { margin:2px 0; }
+    h2 { font-size:13px; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid #1a1a2e; padding-bottom:4px; margin-top:24px; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    td { padding:6px 10px; border:1px solid #e2e8f0; font-size:12px; }
+    td:first-child { font-weight:bold; background:#f8fafc; width:40%; }
+    .signature { display:flex; justify-content:space-between; margin-top:50px; }
+    .sig-block { text-align:center; }
+    .sig-line { width:180px; border-bottom:1px solid #333; margin:40px auto 6px; }
+    .sig-label { font-size:11px; color:#666; }
+    .footer-doc { text-align:center; font-size:10px; color:#999; margin-top:40px; border-top:1px solid #eee; padding-top:12px; }
+    @media print { body { margin:0; padding:30px; } }
+  </style></head><body>
+  <h1>Promesse d'Embauche</h1>
+  <p class="subtitle">Article L.1221-5 et suivants du Code du travail — Document à valeur contractuelle</p>
+  <div class="header-box">
+    <div class="box"><h3>Employeur</h3><p><strong>${empName}</strong></p><p>SIRET : ${siret}</p><p>${empAddr}</p><p>Conv. coll. : ${cc}</p></div>
+    <div class="box"><h3>Candidat(e)</h3><p><strong>${first} ${last}</strong></p><p>${candAddr}</p></div>
+  </div>
+  <h2>Article 1 — Objet</h2>
+  <p>La société <strong>${empName}</strong>, représentée par <strong>${signer}</strong>, s'engage formellement à employer <strong>${first} ${last}</strong> aux conditions suivantes :</p>
+  <table>
+    <tr><td>Poste</td><td>${poste}</td></tr>
+    <tr><td>Nature du contrat</td><td>${contrat}</td></tr>
+    <tr><td>Date de prise de poste</td><td>${date}</td></tr>
+    <tr><td>Durée hebdomadaire</td><td>${heures} heures</td></tr>
+    <tr><td>Salaire brut mensuel</td><td>${Number(sal).toLocaleString('fr-FR')} €</td></tr>
+    <tr><td>Lieu de travail</td><td>${lieu}</td></tr>
+  </table>
+  <h2>Article 2 — Conditions</h2>
+  <p>Cette promesse est consentie sous réserve de la présentation des documents légaux obligatoires (titre de séjour valide si nécessaire, aptitude médicale, casier judiciaire vierge si requis par le poste). Le candidat s'engage à informer l'employeur de toute modification substantielle de sa situation dans les 48 heures.</p>
+  <h2>Article 3 — Rétractation</h2>
+  <p>Conformément à la jurisprudence de la Chambre sociale de la Cour de cassation (arrêt du 21 septembre 2017), la présente promesse unilatérale d'embauche constitue un acte par lequel l'employeur accorde au bénéficiaire le droit d'opter pour la conclusion d'un contrat de travail. La rétractation de la promesse pendant le temps laissé au bénéficiaire pour opter n'empêche pas la formation du contrat.</p>
+  <h2>Article 4 — Délai d'option</h2>
+  <p>Le candidat dispose d'un délai de <strong>5 jours ouvrés</strong> à compter de la réception du présent document pour faire connaître sa décision par écrit à l'employeur.</p>
+  <div class="signature">
+    <div class="sig-block"><div class="sig-line"></div><p class="sig-label">L'Employeur<br><em>${signer}</em></p></div>
+    <div class="sig-block"><div class="sig-line"></div><p class="sig-label">Le/La Candidat(e)<br><em>${first} ${last}</em></p></div>
+  </div>
+  <p class="footer-doc">Fait en deux exemplaires originaux — ${today} — Document généré par CoûtSalarié Pro</p>
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => w.print(), 500);
+  showToast('📄 Document généré !');
+}
+
+// ═══════════════════════════════════════════
+// EXPORT MODAL
+// ═══════════════════════════════════════════
+function openExportModal() {
+  const modal = document.getElementById('export-modal');
+  const content = document.getElementById('export-content');
+  if (!employees.length) {
+    showToast('⚠️ Aucun employé à exporter');
+    return;
+  }
+  let totalBrut = 0, totalPat = 0, totalTot = 0;
+  let rows = employees.map((emp, i) => {
+    const r = getResult(emp);
+    totalBrut += r.br; totalPat += r.pat; totalTot += r.tot;
+    return `<div class="export-row">
+      <span class="ename">Employé ${i+1} (${TYPE_LABEL[emp.type]})</span>
+      <span class="eamount">${r.tot.toLocaleString('fr-FR')} €</span>
+    </div>`;
+  }).join('');
+  const mois = new Date().toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
+  content.innerHTML = `
+    <div style="font-size:0.75rem;color:var(--slate-500);margin-bottom:10px">Bilan — ${mois}</div>
+    ${rows}
+    <div class="divider"></div>
+    <div class="export-row" style="font-weight:700">
+      <span class="ename">Total Masse Brute</span>
+      <span class="eamount">${totalBrut.toLocaleString('fr-FR')} €</span>
+    </div>
+    <div class="export-row" style="font-weight:700">
+      <span class="ename">Total Charges Patronales</span>
+      <span class="eamount">${totalPat.toLocaleString('fr-FR')} €</span>
+    </div>
+    <div style="background:var(--blue-50);border-radius:8px;padding:12px;margin-top:10px;display:flex;justify-content:space-between">
+      <span style="font-weight:800;color:var(--blue-900)">COÛT TOTAL EMPLOYEUR</span>
+      <span style="font-weight:900;color:var(--blue-700);font-family:'DM Mono',monospace;font-size:1rem">${totalTot.toLocaleString('fr-FR')} €</span>
+    </div>`;
+  modal.classList.add('open');
+}
+
+function closeExportModal(e) {
+  if (!e || e.target === document.getElementById('export-modal'))
+    document.getElementById('export-modal').classList.remove('open');
+}
+
+function printBilan() {
+  window.print();
+}
+
+
+
+// ═══════════════════════════════════════════
+// WIZARD CONTRATS — modèles officiels code.travail.gouv.fr
+// ═══════════════════════════════════════════
+
+// ── State ──
+const WIZ = {
+  step: 0,
+  data: {},
+  paid: false
+};
+
+// ── Config des étapes par type ──
+function getSteps(type) {
+  const base = [
+    {
+      id: 'type',
+      title: 'Quel type de contrat souhaitez-vous rédiger ?',
+      subtitle: null,
+      fields: [
+        { id: 'type', type: 'choice', required: true, choices: [
+          { value: 'cdi', icon: '📋', label: 'CDI', sub: 'Durée indéterminée' },
+          { value: 'cdd', icon: '⏳', label: 'CDD', sub: 'Durée déterminée' }
+        ]}
+      ]
+    },
+    {
+      id: 'entreprise',
+      title: '🏢 L\'entreprise',
+      subtitle: 'Quelques infos sur votre société',
+      fields: [
+        { id: 'emp_civilite', label: 'Civilité du signataire', type: 'select', options: ['M.','Mme'], required: true },
+        { id: 'emp_nom_prenom', label: 'Nom & prénom du signataire', type: 'text', placeholder: 'Jean Dupont', required: true },
+        { id: 'emp_fonction', label: 'Fonction du signataire', type: 'text', placeholder: 'Gérant, Président...', required: true },
+        { id: 'emp_denomination', label: 'Nom de la société (dénomination sociale)', type: 'text', placeholder: 'SARL Martin & Fils', required: true },
+        { id: 'emp_adresse', label: 'Adresse du siège social', type: 'text', placeholder: '12 rue de la Paix, 75001 Paris', required: true },
+        { id: 'emp_urssaf', label: 'SIRET', type: 'text', placeholder: '123 456 789 00012', required: true },
+        { id: 'emp_etablissement', label: 'Lieu de travail (si différent du siège — sera repris à l\'étape 4)', type: 'text', placeholder: 'Centre com Beausevran, 93270 Sevran', required: false }
+      ]
+    },
+    {
+      id: 'salarie',
+      title: '👤 Le/La salarié(e)',
+      subtitle: 'Identité de la personne recrutée',
+      fields: [
+        { id: 'sal_civilite', label: 'Civilité', type: 'select', options: ['M.','Mme'], required: true },
+        { id: 'sal_nom', label: 'Nom', type: 'text', placeholder: 'DURAND', required: true },
+        { id: 'sal_prenom', label: 'Prénom', type: 'text', placeholder: 'Marie', required: true },
+        { id: 'sal_adresse', label: 'Adresse complète', type: 'text', placeholder: '5 avenue des Lilas, 69001 Lyon', required: true }
+      ]
+    },
+    {
+      id: 'poste',
+      title: '📋 Le poste',
+      subtitle: null,
+      fields: [
+        { id: 'poste_fonction', label: 'Qualité / Fonction', type: 'text', placeholder: 'Responsable commercial', required: true },
+        { id: 'poste_coeff', label: 'Coefficient hiérarchique', type: 'text', placeholder: '200', required: false },
+        { id: 'poste_classif', label: 'Classification (convention collective)', type: 'text', placeholder: 'Niveau II, Échelon 1', required: false },
+        { id: 'poste_cc', label: 'Convention collective applicable', type: 'text', placeholder: 'Conv. collective nationale du commerce de détail...', required: true },
+        { id: 'poste_lieu', label: 'Lieu(x) de travail', type: 'text', placeholder: '12 rue de la Paix, 75001 Paris', required: true },
+        { id: 'poste_deplacements', label: 'Déplacements professionnels possibles ?', type: 'toggle', required: true }
+      ]
+    },
+    {
+      id: 'duree_travail',
+      title: '⏱ Durée du travail',
+      subtitle: null,
+      fields: [
+        { id: 'temps_type', label: 'Régime de travail', type: 'select',
+          options: ['Temps complet (35h)', 'Temps complet (39h)', 'Temps partiel', 'Forfait jours', 'Forfait heures'], required: true },
+        { id: 'heures_hebdo', label: 'Heures hebdomadaires', type: 'number', placeholder: '35', required: true }
+      ]
+    },
+    {
+      id: 'emploi_du_temps',
+      title: '📅 Emploi du temps',
+      subtitle: null,
+      fields: [
+        { id: 'edt_note', label: 'Remarque horaires (facultatif)', type: 'text', placeholder: 'Pause déjeuner 1h non rémunérée', required: false }
+      ],
+      custom: 'edtPlanning'
+    },
+    {
+      id: 'remuneration',
+      title: '💶 Rémunération',
+      subtitle: null,
+      fields: [
+        { id: 'sal_brut', label: 'Salaire brut mensuel (€)', type: 'number', placeholder: '2 200', required: true, onInput: 'calcTauxHoraire()' },
+        { id: 'sal_taux_horaire', label: 'Taux horaire brut (€/h) — calculé automatiquement', type: 'number', placeholder: 'auto', required: false, readonly: true },
+        { id: 'sal_primes', label: 'Primes ou avantages (laisser vide si aucun)', type: 'text', placeholder: 'Ex : prime annuelle de 500 €, véhicule de fonction...', required: false },
+        { id: 'caisse_retraite', label: 'Caisse de retraite complémentaire', type: 'text', placeholder: 'AGIRC-ARRCO, Humanis...', required: false },
+        { id: 'prevoyance', label: 'Organisme de prévoyance', type: 'text', placeholder: 'AG2R, Malakoff Humanis...', required: false },
+        { id: 'mutuelle', label: 'Mutuelle collective obligatoire ?', type: 'select', options: ['Non', 'Oui'], required: true }
+      ]
+    }
+  ];
+
+  const stepCDI = {
+    id: 'dates_cdi',
+    title: '📅 Date d\'embauche & période d\'essai',
+    subtitle: null,
+    fields: [
+      { id: 'date_debut', label: 'Date de prise d\'effet du contrat', type: 'date', required: true },
+      { id: 'periode_essai', label: 'Période d\'essai', type: 'select',
+        options: ['Sans période d\'essai','1 mois','2 mois','3 mois','4 mois (cadres)','6 mois (cadres supérieurs)'], required: true },
+      { id: 'essai_renouvellement', label: 'Renouvellement de période d\'essai prévu ?', type: 'toggle', required: false }
+    ]
+  };
+
+  const stepCDD = {
+    id: 'dates_cdd',
+    title: '📅 Durée & motif du CDD',
+    subtitle: null,
+    fields: [
+      { id: 'date_debut', label: 'Date de début', type: 'date', required: true },
+      { id: 'cdd_terme_type', label: 'Type de terme', type: 'select',
+        options: ['Terme précis (date de fin fixée)', 'Terme imprécis (fin d\'absence, fin de saison...)'], required: true },
+      { id: 'date_fin', label: 'Date de fin (si terme précis)', type: 'date', required: false },
+      { id: 'duree_min', label: 'Durée minimale (si terme imprécis)', type: 'text', placeholder: '3 mois', required: false },
+      { id: 'motif_recours', label: 'Motif de recours', type: 'select', options: [
+        'Remplacement d\'un salarié absent',
+        'Accroissement temporaire d\'activité',
+        'Emploi saisonnier',
+        'CDD d\'usage (emploi habituel en CDD)',
+        'CDD cadre à objet défini',
+        'Politique de l\'emploi',
+        'Complément de formation professionnelle',
+        'Activité de recherche',
+        'Reconversion professionnelle'
+      ], required: true },
+      { id: 'motif_remplacement_nom', label: 'Nom de la personne remplacée (si remplacement)', type: 'text', placeholder: 'Mme Sophie Martin', required: false },
+      { id: 'motif_remplacement_qualif', label: 'Qualification de la personne remplacée', type: 'text', placeholder: 'Assistante administrative', required: false },
+      { id: 'motif_absence', label: 'Motif de l\'absence', type: 'text', placeholder: 'congé maternité, maladie...', required: false },
+      { id: 'cdd_renouvellement', label: 'Renouvellement possible ?', type: 'select',
+        options: ['Non', 'Oui — 1 fois', 'Oui — 2 fois'], required: true },
+      { id: 'periode_essai_cdd', label: 'Période d\'essai', type: 'select',
+        options: ['Sans période d\'essai','1 semaine','2 semaines','1 mois'], required: true }
+    ]
+  };
+
+  const stepLieu = 'lieu'; // already in poste
+  const stepRecap = { id: 'recap', title: '✅ Récapitulatif', subtitle: null, fields: [] };
+
+  if (type === 'cdi') return [...base, stepCDI, stepRecap];
+  if (type === 'cdd') return [...base, stepCDD, stepRecap];
+  return base; // before type chosen
+}
+
+
+function calcTauxHoraire() {
+  const brut = parseFloat(WIZ.data['sal_brut'] || document.getElementById('wf_sal_brut')?.value || 0);
+  // heures hebdo vient de l'etape precedente (deja dans WIZ.data)
+  const heures = parseFloat(WIZ.data['heures_hebdo'] || 35);
+  if (brut > 0 && heures > 0) {
+    // Taux horaire = brut mensuel / (heures hebdo * 52 / 12)
+    const tauxH = brut / (heures * 52 / 12);
+    const rounded = Math.round(tauxH * 100) / 100;
+    WIZ.data['sal_taux_horaire'] = rounded.toFixed(4);
+    const el = document.getElementById('wf_sal_taux_horaire');
+    if (el) el.value = rounded.toLocaleString('fr-FR', {minimumFractionDigits: 4, maximumFractionDigits: 4});
+  }
+}
+
+
+// ═══════════════════════════════════════════
+// PROFIL EMPLOYEUR
+// ═══════════════════════════════════════════
+const PROFILE_KEY = 'spp_profile';
+
+function loadProfile() {
+  try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}'); } catch { return {}; }
+}
+
+function saveProfile() {
+  const p = {
+    emp_civilite:      document.getElementById('prof-civilite')?.value || '',
+    emp_nom_prenom:    (document.getElementById('prof-prenom')?.value || '') + ' ' + (document.getElementById('prof-nom')?.value || ''),
+    emp_prenom:        document.getElementById('prof-prenom')?.value || '',
+    emp_nom:           document.getElementById('prof-nom')?.value || '',
+    emp_fonction:      document.getElementById('prof-fonction')?.value || '',
+    emp_denomination:  document.getElementById('prof-denomination')?.value || '',
+    emp_adresse:       document.getElementById('prof-adresse')?.value || '',
+    emp_urssaf:        document.getElementById('prof-urssaf')?.value || '',
+    emp_cc:            document.getElementById('prof-cc')?.value || '',
+    emp_etablissement:   document.getElementById('prof-etablissement')?.value || '',
+    horaire_matin:       document.getElementById('prof-horaire-matin')?.value || '',
+    horaire_apmidi:      document.getElementById('prof-horaire-apmidi')?.value || ''
+  };
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+  const badge = document.getElementById('profile-saved-badge');
+  badge.classList.add('show');
+  setTimeout(() => badge.classList.remove('show'), 2500);
+  showToast('✅ Profil employeur enregistré !');
+}
+
+function openProfileModal() {
+  const p = loadProfile();
+  // Pré-remplir les champs du modal depuis le profil sauvegardé
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  set('prof-civilite', p.emp_civilite);
+  set('prof-prenom', p.emp_prenom);
+  set('prof-nom', p.emp_nom);
+  set('prof-fonction', p.emp_fonction);
+  set('prof-denomination', p.emp_denomination);
+  set('prof-adresse', p.emp_adresse);
+  set('prof-urssaf', p.emp_urssaf);
+  set('prof-cc', p.emp_cc);
+  set('prof-etablissement', p.emp_etablissement);
+  set('prof-horaire-matin', p.horaire_matin);
+  set('prof-horaire-apmidi', p.horaire_apmidi);
+  document.getElementById('profile-modal').classList.add('open');
+}
+
+function closeProfileModal(e) {
+  if (!e || e.target === document.getElementById('profile-modal')) {
+    document.getElementById('profile-modal').classList.remove('open');
+  }
+}
+
+// Injecter le profil dans WIZ.data avant de démarrer le wizard
+function wizInitWithProfile() {
+  WIZ.step = 0;
+  WIZ.data = {};
+  WIZ.paid = false;
+  WIZ.contractGenerated = false;
+  // Pré-remplir depuis le profil
+  const p = loadProfile();
+  if (p.emp_denomination) {
+    WIZ.data.emp_civilite     = p.emp_civilite || 'M.';
+    WIZ.data.emp_nom_prenom   = p.emp_nom_prenom || '';
+    WIZ.data.emp_fonction     = p.emp_fonction || '';
+    WIZ.data.emp_denomination = p.emp_denomination || '';
+    WIZ.data.emp_adresse      = p.emp_adresse || '';
+    WIZ.data.emp_urssaf       = p.emp_urssaf || '';
+    WIZ.data.poste_cc         = p.emp_cc || '';
+    WIZ.data.emp_etablissement = p.emp_etablissement || '';
+    WIZ.data._profileLoaded   = true;
+  }
+  wizRender();
+}
+
+// ═══════════════════════════════════════════
+// MODIFICATION CONTRAT APRÈS GÉNÉRATION
+// ═══════════════════════════════════════════
+// Stratégie : après génération, on affiche une bannière
+// "Modifier le contrat" qui revient à l'étape 2 (en gardant les données)
+// Le contrat peut être re-généré autant de fois que souhaité DANS LA MÊME SESSION.
+// Une fois la page rechargée, WIZ.paid est perdu → normal, c'est une session.
+
+function wizShowModifBanner() {
+  return `
+  <div class="modif-banner">
+    <strong>✏️ Vous pouvez modifier ce contrat</strong>
+    Revenez sur n'importe quelle étape et re-générez gratuitement.
+    <br><small>Valable pendant toute la session (jusqu'à fermeture de l'application).</small>
+  </div>
+  <button class="btn-modif" onclick="wizModify()">✏️ Modifier les informations</button>
+  <button class="btn btn-success" style="margin-bottom:8px" onclick="wizGenerate()">📄 Re-générer le contrat PDF</button>
+  <div class="wiz-nav">
+    <div></div>
+    <button class="btn btn-outline" onclick="wizInitWithProfile()">🆕 Nouveau contrat</button>
+  </div>`;
+}
+
+function wizModify() {
+  // Retour à l'étape 2 (entreprise) en gardant toutes les données
+  WIZ.step = 1;
+  wizRender();
+}
+
+
+function wizInit() { wizInitWithProfile(); }
+
+function wizRender() {
+  const type = WIZ.data.type || null;
+  const steps = getSteps(type || '');
+  const step = steps[WIZ.step] || steps[steps.length - 1];
+  const isLast = step.id === 'recap';
+  const container = document.getElementById('wiz-container');
+  if (!container) return;
+
+  // Progress bar
+  const total = type ? steps.length : 1;
+  const pct = Math.round(((WIZ.step) / Math.max(total - 1, 1)) * 100);
+
+  let html = `
+    <div class="wiz-header">
+      <div class="wiz-progress-bar"><div class="wiz-progress-fill" style="width:${pct}%"></div></div>
+      <div class="wiz-step-label">Étape ${WIZ.step + 1}${type ? ' / ' + total : ''}</div>
+    </div>
+    <div class="card wiz-card">
+      <div class="wiz-title">${step.title}</div>
+      ${step.subtitle ? `<div class="wiz-subtitle">${step.subtitle}</div>` : ''}
+      ${step.id === 'entreprise' && WIZ.data._profileLoaded ? `<div style="background:var(--green-100);border:1px solid #bbf7d0;border-radius:8px;padding:6px 10px;font-size:0.72rem;color:var(--green-600);font-weight:700;margin-bottom:10px">✅ Profil employeur pré-rempli — vérifiez et modifiez si besoin</div>` : ''}
+  `;
+
+  if (step.id === 'recap') {
+    html += buildRecap();
+  } else {
+    html += buildFields(step.fields, step);
+  }
+
+  html += `</div>`;
+
+  // Navigation
+  if (!isLast) {
+    html += `<div class="wiz-nav">
+      ${WIZ.step > 0 ? `<button class="btn btn-secondary wiz-btn-back" onclick="wizBack()">← Retour</button>` : '<div></div>'}
+      <button class="btn btn-primary wiz-btn-next" onclick="wizNext()">Continuer →</button>
+    </div>`;
+  } else {
+    // Recap — paywall or generate
+    if (!WIZ.paid) {
+      html += `
+      <div class="paywall" style="margin-top:0">
+        <span class="paywall-icon">🔒</span>
+        <div class="paywall-title">Générer le contrat de travail</div>
+        <div class="paywall-sub">Document juridique complet, conforme au Code du travail,<br>article par article, prêt à imprimer et signer.</div>
+        <div class="paywall-price"><span>Contrat ${WIZ.data.type === 'cdi' ? 'CDI' : 'CDD'}</span><span class="amount">9,99 €</span></div>
+        <button class="btn-pay" onclick="wizPay()">💳 Payer et générer le contrat</button>
+        <div class="secure-badge">🔒 Paiement sécurisé Stripe · PDF instantané</div>
+      </div>
+      <div class="wiz-nav" style="margin-top:12px">
+        <button class="btn btn-secondary wiz-btn-back" onclick="wizBack()">← Modifier</button>
+        <div></div>
+      </div>`;
+    } else {
+      html += `
+      <div class="unlocked-badge" style="margin-top:0">✅ Contrat déverrouillé</div>
+      ${wizShowModifBanner()}`;
+    }
+  }
+
+  container.innerHTML = html;
+  // Restore saved values
+  restoreFieldValues(step.fields);
+  // Auto-remplir heures hebdo selon type temps
+  // Pré-remplir lieu depuis établissement
+  if (step.id === 'poste') {
+    // Pré-remplir lieu depuis établissement ou dénomination
+    if (!WIZ.data['poste_lieu']) {
+      // Lieu de travail = établissement si renseigné, sinon adresse du siège
+      WIZ.data['poste_lieu'] = WIZ.data['emp_etablissement'] || WIZ.data['emp_adresse'] || '';
+    }
+    // Forcer la valeur dans le DOM après rendu
+    setTimeout(() => {
+      const el = document.getElementById('wf_poste_lieu');
+      if (el && !el.value && WIZ.data['poste_lieu']) el.value = WIZ.data['poste_lieu'];
+    }, 30);
+  }
+  if (step.id === 'duree_travail') {
+    // Pré-remplir heures hebdo selon régime AVANT restoreFieldValues
+    function syncHeuresFromRegime(val) {
+      if (!val) return;
+      const map = { '35h': '35', '39h': '39' };
+      for (const [k, v] of Object.entries(map)) {
+        if (val.includes(k)) { WIZ.data['heures_hebdo'] = v; return; }
+      }
+      // Temps partiel / forfait : garder la valeur existante ou vider pour saisie manuelle
+    }
+    // Appliquer immédiatement si on a déjà un type sélectionné
+    if (WIZ.data['temps_type']) syncHeuresFromRegime(WIZ.data['temps_type']);
+    setTimeout(() => {
+      const selEl = document.getElementById('wf_temps_type');
+      const hEl   = document.getElementById('wf_heures_hebdo');
+      if (selEl) {
+        // Sync à l'affichage
+        syncHeuresFromRegime(selEl.value);
+        if (hEl && WIZ.data['heures_hebdo']) hEl.value = WIZ.data['heures_hebdo'];
+        selEl.addEventListener('change', function() {
+          syncHeuresFromRegime(this.value);
+          WIZ.data['temps_type'] = this.value;
+          if (hEl && WIZ.data['heures_hebdo']) hEl.value = WIZ.data['heures_hebdo'];
+        });
+      }
+    }, 30);
+  }
+  if (step.id === 'remuneration') {
+    setTimeout(calcTauxHoraire, 50);
+  }
+}
+
+
+// ─── Constantes de planning ───
+function getEdtPresets() {
+  const p = loadProfile();
+  const matin  = p.horaire_matin  || '8h00–12h30';
+  const apmidi = p.horaire_apmidi || '14h00–17h00';
+  return {
+    'repos':   { label: '🔴 Repos',   value: 'Repos' },
+    'matin':   { label: '🌅 Matin',   value: matin },
+    'journee': { label: '☀️ Journée', value: matin + ' / ' + apmidi },
+    'am':      { label: '🌤 Ap-midi', value: apmidi },
+    'custom':  { label: '✏️ Perso',   value: '' }
+  };
+}
+// Alias pour compatibilité
+const EDT_PRESETS = {
+  'repos':   { label: '🔴 Repos',   value: 'Repos' },
+  'matin':   { label: '🌅 Matin',   value: '8h00–12h30' },
+  'journee': { label: '☀️ Journée', value: '8h00–12h00 / 14h00–17h00' },
+  'am':      { label: '🌤 Ap-midi', value: '14h00–17h00' },
+  'custom':  { label: '✏️ Perso',   value: '' }
+};
+const EDT_JOURS = ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
+const EDT_LABELS = { lundi:'Lundi', mardi:'Mardi', mercredi:'Mercredi',
+                     jeudi:'Jeudi', vendredi:'Vendredi', samedi:'Samedi', dimanche:'Dimanche' };
+
+function buildEdtPlanning() {
+  // Appliquer preset global si défini
+  let html = `
+  <div class="edt-global-wrap">
+    <div style="font-size:0.72rem;color:var(--slate-500);font-weight:600;margin-bottom:6px">REMPLISSAGE RAPIDE</div>
+    <div class="edt-global-btns">
+      <button class="edt-gbtn" onclick="edtFillAll('journee')">☀️ Tous en journée</button>
+      <button class="edt-gbtn" onclick="edtFillWeek('journee')">📅 Lun–Ven journée</button>
+      <button class="edt-gbtn" onclick="edtFillAll('matin')">🌅 Tous matin</button>
+      <button class="edt-gbtn danger" onclick="edtFillAll('repos')">🔴 Tout repos</button>
+    </div>
+  </div>
+  <div class="edt-divider"></div>`;
+
+  const PRESETS = getEdtPresets();
+  for (const jour of EDT_JOURS) {
+    const val = WIZ.data['edt_' + jour] || '';
+    const isRepos = val === 'Repos';
+    const isCustom = val && !Object.values(PRESETS).find(p => p.value === val && p.value !== '');
+    html += `
+    <div class="edt-row" id="edt-row-${jour}">
+      <div class="edt-jour-label">${EDT_LABELS[jour]}</div>
+      <div class="edt-presets">
+        ${Object.entries(PRESETS).map(([k,p]) => {
+          const active = k === 'repos' ? isRepos : (k === 'custom' ? isCustom : val === p.value);
+          return `<button class="edt-preset-btn ${active ? 'active' : ''}" onclick="edtSetDay('${jour}','${k}')">${p.label}</button>`;
+        }).join('')}
+      </div>
+      <div class="edt-custom-input" id="edt-custom-${jour}" style="display:${isCustom ? 'block' : 'none'}">
+        <input type="text" placeholder="Ex: 9h00–13h00" value="${isCustom ? val : ''}"
+          oninput="WIZ.data['edt_${jour}']=this.value">
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <div class="edt-val-preview" id="edt-preview-${jour}" style="flex:1">${val || '<span style="color:var(--slate-300)">Non défini</span>'}</div>
+        ${val && val !== 'Repos' ? `<button class="edt-copy-btn" onclick="edtCopyDay('${jour}')" title="Copier vers les jours suivants">📋 Copier</button>` : ''}
+      </div>
+    </div>`;
+  }
+  return html;
+}
+
+function edtSetDay(jour, preset) {
+  if (preset === 'custom') {
+    const inp = document.getElementById('edt-custom-' + jour);
+    if (inp) { inp.style.display = 'block'; inp.querySelector('input').focus(); }
+    // marquer les boutons
+    document.querySelectorAll(`#edt-row-${jour} .edt-preset-btn`).forEach((b,i) => b.classList.toggle('active', i === Object.keys(getEdtPresets()).indexOf('custom')));
+    return;
+  }
+  const val = getEdtPresets()[preset]?.value || '';
+  WIZ.data['edt_' + jour] = val;
+  // Masquer custom input
+  const inp = document.getElementById('edt-custom-' + jour);
+  if (inp) inp.style.display = 'none';
+  // Preview
+  const prev = document.getElementById('edt-preview-' + jour);
+  if (prev) prev.innerHTML = val || '<span style="color:var(--slate-300)">Non défini</span>';
+  // Active state
+  document.querySelectorAll(`#edt-row-${jour} .edt-preset-btn`).forEach((b,i) => {
+    const k = Object.keys(EDT_PRESETS)[i];
+    b.classList.toggle('active', k === preset);
+  });
+}
+
+function edtCopyDay(sourceJour) {
+  const val = WIZ.data['edt_' + sourceJour];
+  if (!val) return;
+  const idx = EDT_JOURS.indexOf(sourceJour);
+  // Copier vers tous les jours suivants (jusqu'à vendredi max si source < sam)
+  const targets = EDT_JOURS.slice(idx + 1).filter(j => !['samedi','dimanche'].includes(j) || ['samedi','dimanche'].includes(sourceJour));
+  if (targets.length === 0) { showToast('Aucun jour suivant à remplir'); return; }
+  targets.forEach(j => {
+    WIZ.data['edt_' + j] = val;
+    const prev = document.getElementById('edt-preview-' + j);
+    if (prev) prev.innerHTML = val;
+    // Marquer le bouton "custom" ou le bon preset comme actif
+    const presets = getEdtPresets();
+    const matchKey = Object.entries(presets).find(([k,p]) => p.value === val)?.[0] || 'custom';
+    document.querySelectorAll(`#edt-row-${j} .edt-preset-btn`).forEach((b,i) => {
+      b.classList.toggle('active', Object.keys(presets)[i] === matchKey);
+    });
+    // Masquer custom input si preset trouvé
+    const inp = document.getElementById('edt-custom-' + j);
+    if (inp) inp.style.display = matchKey === 'custom' ? 'block' : 'none';
+  });
+  showToast('📋 Copié vers ' + targets.map(j => EDT_LABELS[j]).join(', '));
+}
+
+function edtFillAll(preset) {
+  EDT_JOURS.forEach(j => edtSetDay(j, preset));
+}
+
+function edtFillWeek(preset) {
+  ['lundi','mardi','mercredi','jeudi','vendredi'].forEach(j => edtSetDay(j, preset));
+  ['samedi','dimanche'].forEach(j => edtSetDay(j, 'repos'));
+}
+
+function buildFields(fields, step) {
+  let html = '';
+  // ── Planning rapide ──
+  if (step && step.custom === 'edtPlanning') {
+    html += buildEdtPlanning();
+  }
+  for (const f of fields) {
+    if (f.type === 'choice') {
+      html += `<div class="wiz-choices">`;
+      for (const c of f.choices) {
+        const sel = WIZ.data[f.id] === c.value ? 'selected' : '';
+        html += `<div class="wiz-choice ${sel}" onclick="wizChoose('${f.id}','${c.value}')">
+          <span class="wiz-choice-icon">${c.icon}</span>
+          <div class="wiz-choice-label">${c.label}</div>
+          <div class="wiz-choice-sub">${c.sub}</div>
+        </div>`;
+      }
+      html += `</div>`;
+    } else if (f.type === 'toggle') {
+      const val = WIZ.data[f.id];
+      html += `<div class="form-group wiz-toggle-group">
+        <label>${f.label}</label>
+        <div class="wiz-toggle-wrap">
+          <button class="wiz-toggle-btn ${val === 'oui' ? 'active' : ''}" onclick="wizToggle('${f.id}','oui')">Oui</button>
+          <button class="wiz-toggle-btn ${val === 'non' ? 'active' : ''}" onclick="wizToggle('${f.id}','non')">Non</button>
+        </div>
+      </div>`;
+    } else if (f.type === 'select') {
+      const saved = WIZ.data[f.id] || '';
+      html += `<div class="form-group">
+        <label>${f.label}${f.required ? ' <span class="req">*</span>' : ''}</label>
+        <select id="wf_${f.id}" onchange="WIZ.data['${f.id}']=this.value">
+          ${f.options.map(o => `<option value="${o}" ${saved === o ? 'selected':''}>${o}</option>`).join('')}
+        </select>
+      </div>`;
+    } else {
+      const saved = WIZ.data[f.id] || '';
+      const readonlyAttr = f.readonly ? 'readonly style="background:var(--slate-100);color:var(--slate-500);cursor:default"' : '';
+      const extraInput = f.onInput ? `;${f.onInput}` : '';
+      html += `<div class="form-group">
+        <label>${f.label}${f.required ? ' <span class="req">*</span>' : ''}</label>
+        <input type="${f.type || 'text'}" id="wf_${f.id}" placeholder="${f.placeholder || ''}"
+          value="${saved}"
+          ${readonlyAttr}
+          onchange="WIZ.data['${f.id}']=this.value${extraInput}"
+          oninput="WIZ.data['${f.id}']=this.value${extraInput}">
+      </div>`;
+    }
+  }
+  return html;
+}
+
+function buildRecap() {
+  const d = WIZ.data;
+  const fmt = (v) => v || '<span style="color:#f59e0b">—</span>';
+  const rows = [
+    ['Type de contrat', d.type === 'cdi' ? 'CDI' : 'CDD'],
+    ['Société', fmt(d.emp_denomination)],
+    ['Siège social', fmt(d.emp_adresse)],
+    ['Signataire', fmt(`${d.emp_civilite || ''} ${d.emp_nom_prenom || ''} — ${d.emp_fonction || ''}`)],
+    ['SIRET', fmt(d.emp_urssaf)],
+    ['Salarié(e)', fmt(`${d.sal_civilite || ''} ${d.sal_prenom || ''} ${d.sal_nom || ''}`)],
+    ['Adresse salarié', fmt(d.sal_adresse)],
+    ['Poste', fmt(d.poste_fonction)],
+    ['Classification', fmt(d.poste_classif || d.poste_coeff)],
+    ['Convention collective', fmt(d.poste_cc)],
+    ['Lieu de travail', fmt(d.poste_lieu)],
+    ['Durée travail', fmt(d.temps_type)],
+    ['Heures hebdo', fmt(d.heures_hebdo ? d.heures_hebdo + 'h' : '')],
+    ['Salaire brut', fmt(d.sal_brut ? d.sal_brut + ' €/mois' : '')],
+    ['Date de début', fmt(d.date_debut ? new Date(d.date_debut).toLocaleDateString('fr-FR') : '')],
+    d.type === 'cdi' ? ['Période d\'essai', fmt(d.periode_essai)] : ['Motif CDD', fmt(d.motif_recours)],
+    d.type === 'cdd' ? ['Date de fin', fmt(d.date_fin ? new Date(d.date_fin).toLocaleDateString('fr-FR') : d.duree_min)] : null,
+  ].filter(Boolean);
+
+  let html = '<div class="recap-table">';
+  for (const [k, v] of rows) {
+    html += `<div class="recap-row"><div class="recap-key">${k}</div><div class="recap-val">${v}</div></div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function restoreFieldValues(fields) {
+  if (!fields) return;
+  for (const f of fields) {
+    if (f.type === 'choice' || f.type === 'toggle') continue;
+    const el = document.getElementById('wf_' + f.id);
+    if (el && WIZ.data[f.id] !== undefined) {
+      el.value = WIZ.data[f.id];
+    }
+  }
+}
+
+function wizChoose(id, value) {
+  WIZ.data[id] = value;
+  if (id === 'type') {
+    // Auto-advance
+    setTimeout(wizNext, 150);
+  } else {
+    wizRender();
+  }
+}
+
+function wizToggle(id, value) {
+  WIZ.data[id] = value;
+  wizRender();
+}
+
+function wizCollectStep() {
+  const type = WIZ.data.type || '';
+  const steps = getSteps(type);
+  const step = steps[WIZ.step];
+  if (!step || step.id === 'recap') return true;
+
+  for (const f of step.fields) {
+    if (f.type === 'choice' || f.type === 'toggle') continue;
+    const el = document.getElementById('wf_' + f.id);
+    if (el) WIZ.data[f.id] = el.value;
+  }
+  return true;
+}
+
+function wizNext() {
+  wizCollectStep();
+  const type = WIZ.data.type || '';
+  const steps = getSteps(type);
+  if (WIZ.step < steps.length - 1) {
+    WIZ.step++;
+    wizRender();
+    document.getElementById('wiz-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function wizBack() {
+  if (WIZ.step > 0) {
+    WIZ.step--;
+    wizRender();
+    document.getElementById('wiz-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function wizPay() {
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:white;border-radius:16px;padding:24px;width:100%;max-width:360px;text-align:center;font-family:'DM Sans',sans-serif">
+      <div style="font-size:2.2rem;margin-bottom:10px">💳</div>
+      <div style="font-size:1rem;font-weight:800;margin-bottom:4px;color:#0f172a">Paiement sécurisé</div>
+      <div style="font-size:0.72rem;color:#64748b;margin-bottom:20px">Simulation Stripe — en production, le vrai formulaire Stripe s'affiche ici</div>
+      <div style="background:#f1f5f9;border-radius:8px;padding:12px 14px;margin-bottom:18px;text-align:left">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:0.82rem;font-weight:600">Contrat ${WIZ.data.type === 'cdi' ? 'CDI' : 'CDD'} — conforme Code du travail</span>
+          <span style="font-size:0.9rem;font-weight:800;color:#0f172a">${prixLabel(prixContrat())}</span>
+        </div>
+        <div style="font-size:0.65rem;color:#94a3b8">Généré instantanément · Téléchargeable</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+        <div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;font-size:0.7rem;color:#64748b;text-align:left">
+          <div style="font-weight:700;color:#0f172a;margin-bottom:2px">💳 Numéro de carte</div>
+          <div style="color:#cbd5e1;font-size:0.65rem">•••• •••• •••• ••••</div>
+        </div>
+        <div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;font-size:0.7rem;color:#64748b;text-align:left">
+          <div style="font-weight:700;color:#0f172a;margin-bottom:2px">📅 Expiration</div>
+          <div style="color:#cbd5e1;font-size:0.65rem">MM / AA</div>
+        </div>
+      </div>
+      <button id="pay-confirm-btn" onclick="wizConfirmPay(this)" style="background:linear-gradient(135deg,#16a34a,#15803d);color:white;width:100%;padding:13px;border-radius:10px;border:none;font-weight:800;font-size:0.9rem;cursor:pointer;margin-bottom:8px;font-family:'DM Sans',sans-serif;box-shadow:0 4px 12px rgba(22,163,74,0.35)">
+        ✅ Confirmer le paiement — ${prixLabel(prixContrat())}
+      </button>
+      <button onclick="this.closest('[style*=fixed]').remove()" style="background:#f1f5f9;color:#334155;width:100%;padding:10px;border-radius:10px;border:none;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
+        Annuler
+      </button>
+      <div style="font-size:0.6rem;color:#94a3b8;margin-top:10px">🔒 Paiement chiffré · Jamais de données stockées</div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function wizConfirmPay(btn) {
+  btn.innerHTML = '⏳ Traitement en cours...';
+  btn.disabled = true;
+  btn.style.opacity = '0.7';
+  setTimeout(() => {
+    btn.closest('[style*="fixed"]').remove();
+    WIZ.paid = true;
+    wizRender();
+    showToast('✅ Paiement validé ! Votre contrat est prêt.');
+    wizGenerate();
+  }, 1800);
+}
+
+// ─── GENERATION CONTRAT basée sur les modèles officiels ───
+function gw(id, fallback) {
+  return WIZ.data[id] || fallback || '___________';
+}
+
+function wizGenerate() {
+  const d = WIZ.data;
+  const isCDI = d.type === 'cdi';
+  const typeLabel = isCDI ? 'CONTRAT DE TRAVAIL À DURÉE INDÉTERMINÉE' : 'CONTRAT DE TRAVAIL À DURÉE DÉTERMINÉE';
+
+  const salCivil = gw('sal_civilite');
+  const salNom = gw('sal_nom');
+  const salPrenom = gw('sal_prenom');
+  const salRef = salCivil === 'Mme' ? 'la salariée' : 'le salarié';
+  const salPron = salCivil === 'Mme' ? 'Elle' : 'Il';
+  const salPronMin = salCivil === 'Mme' ? 'elle' : 'il';
+  const salAdj = salCivil === 'Mme' ? 'e' : '';
+
+  const empRef     = gw('emp_denomination');   // nom seul
+  const empAdresse = gw('emp_adresse');        // adresse siège
+  const empUrssaf = gw('emp_urssaf');
+  const empSig = `${gw('emp_civilite')} ${gw('emp_nom_prenom')}, ${gw('emp_fonction')}`;
+  const etablissement = d.emp_etablissement || d.emp_adresse || d.emp_denomination;
+
+  const poste = gw('poste_fonction');
+  const coeff = d.poste_coeff ? `au coefficient hiérarchique <strong>${d.poste_coeff}</strong>` : '';
+  const classif = d.poste_classif ? `ou de la classification <strong>${d.poste_classif}</strong>` : '';
+  const cc = gw('poste_cc');
+  const lieu = gw('poste_lieu');
+  const deplacements = d.poste_deplacements === 'oui';
+
+  const tempsType = gw('temps_type');
+  const heures = gw('heures_hebdo');
+  const isPartiel = tempsType.includes('partiel');
+  const isForfaitJ = tempsType.includes('jours');
+  const isForfaitH = tempsType.includes('heures') && tempsType.includes('forfait');
+
+  const salBrut = d.sal_brut ? parseFloat(d.sal_brut).toLocaleString('fr-FR', {minimumFractionDigits:2}) : '___________';
+  const tauxH = d.sal_taux_horaire || '___________';
+  const primes = (d.sal_primes && d.sal_primes.trim() && isNaN(d.sal_primes.trim())) ? d.sal_primes.trim() : '';
+  const caisse = d.caisse_retraite || '___________';
+  const prevoyance = d.prevoyance || '___________';
+  const mutuelle = d.mutuelle === 'Oui';
+
+  const dateDebut = d.date_debut ? new Date(d.date_debut).toLocaleDateString('fr-FR') : '___________';
+  const today = new Date().toLocaleDateString('fr-FR');
+
+  // ─ Durée du travail article ─
+  let articleDureeTravail = '';
+  if (isPartiel) {
+    articleDureeTravail = `
+    <p>${salPron.replace('Il','Le salarié').replace('Elle','La salariée')} exercera ses fonctions dans le cadre d'un contrat de travail à <strong>temps partiel</strong>.</p>
+    <p>La durée hebdomadaire de travail sera de <strong>${heures} heures</strong>.</p>
+    <p>La répartition de la durée du travail s'effectuera sur la semaine comme suit :</p>
+    <table>
+      <tr><td>Lundi</td><td>___ heures</td></tr>
+      <tr><td>Mardi</td><td>___ heures</td></tr>
+      <tr><td>Mercredi</td><td>___ heures</td></tr>
+      <tr><td>Jeudi</td><td>___ heures</td></tr>
+      <tr><td>Vendredi</td><td>___ heures</td></tr>
+    </table>
+    <p>Des heures complémentaires pourront être accomplies dans la limite d'un dixième de la durée hebdomadaire prévue au contrat, sauf accord de branche permettant d'aller jusqu'à un tiers.</p>`;
+  } else if (isForfaitJ) {
+    articleDureeTravail = `
+    <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'}, dont la durée de travail ne peut être prédéterminée, dispose d'une réelle autonomie dans l'organisation de son emploi du temps pour l'exercice des responsabilités qui lui sont confiées.</p>
+    <p>En application de l'accord collectif applicable, ${salRef} sera soumis${salAdj} à une convention de forfait annuel en jours. Le nombre de jours travaillés est fixé à <strong>___ jours par an</strong>.</p>`;
+  } else {
+    articleDureeTravail = `
+    <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} exercera ses fonctions dans le cadre d'un contrat de travail à <strong>temps complet</strong>.</p>
+    <p>${salPron} est assujetti${salAdj} à l'horaire collectif applicable au sein de l'entreprise.</p>
+    <p>La durée hebdomadaire de travail sera de <strong>${heures} heures</strong>.</p>`;
+  }
+
+  // ─ Articles spécifiques CDI / CDD ─
+  let articleSpecifique = '';
+  let articleDuree = '';
+
+  if (isCDI) {
+    const essai = d.periode_essai;
+    const essaiText = essai === 'Sans période d\'essai'
+      ? '<p>Il n\'est pas prévu de période d\'essai pour ce contrat.</p>'
+      : `<p>Le présent contrat prévoit une période d'essai d'une durée de <strong>${essai}</strong>.
+         ${d.essai_renouvellement === 'oui' ? 'Cette période d\'essai peut être reconduite, avec l\'accord ' + salRef + ', pour une durée maximum équivalente. ' : ''}
+         Il peut être mis fin à cette période d'essai à l'initiative de l'employeur ou de ${salRef} en respectant les délais de prévenance légaux et conventionnels.</p>`;
+
+    articleDuree = `
+    <h2>Article 3 — Date d'embauche</h2>
+    <p>Le présent contrat prend effet le <strong>${dateDebut}</strong> et est conclu pour une <strong>durée indéterminée</strong>.</p>
+
+    <h2>Article 4 — Période d'essai</h2>
+    ${essaiText}`;
+
+  } else {
+    // CDD
+    const dateFin = d.date_fin ? new Date(d.date_fin).toLocaleDateString('fr-FR') : '___________';
+    const termePrecis = !d.cdd_terme_type || d.cdd_terme_type.includes('précis');
+    const motif = gw('motif_recours');
+    const renouvellement = d.cdd_renouvellement || 'Non';
+
+    let motifDetail = '';
+    if (motif.includes('Remplacement')) {
+      const nomRemp = d.motif_remplacement_nom ? ` de <strong>${d.motif_remplacement_nom}</strong>` : '';
+      const qualifRemp = d.motif_remplacement_qualif ? `, habituellement employé${salAdj} en qualité de <strong>${d.motif_remplacement_qualif}</strong>,` : '';
+      const motifAbsence = d.motif_absence ? ` pendant son absence pour cause de <strong>${d.motif_absence}</strong>` : '';
+      motifDetail = `Pour assurer le remplacement${nomRemp}${qualifRemp}${motifAbsence} (article L. 1242-2, 1° du Code du travail).`;
+    } else if (motif.includes('temporaire')) {
+      motifDetail = `Au motif d'un accroissement temporaire de l'activité de l'entreprise (article L. 1242-2, 2° du Code du travail).`;
+    } else if (motif.includes('saisonnier')) {
+      motifDetail = `Sur un emploi à caractère saisonnier (article L. 1242-2, 3° du Code du travail).`;
+    } else if (motif.includes('usage')) {
+      motifDetail = `Dans le cadre d'un CDD d'usage, sur un emploi pour lequel il est d'usage constant de ne pas recourir au CDI (article L. 1242-2, 3° du Code du travail).`;
+    } else {
+      motifDetail = motif;
+    }
+
+    const essaiCDD = d.periode_essai_cdd;
+    const essaiTextCDD = essaiCDD && essaiCDD !== 'Sans période d\'essai'
+      ? `<h2>Article 5 — Période d'essai</h2><p>Le présent contrat prévoit une période d'essai d'une durée de <strong>${essaiCDD}</strong>. Il peut y être mis fin dans les conditions légales et conventionnelles.</p>`
+      : '';
+
+    articleDuree = `
+    <h2>Article 2 — Motif de recours au contrat à durée déterminée</h2>
+    <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} est recruté${salAdj} : <strong>${motifDetail}</strong></p>
+
+    <h2>Article 4 — Durée du contrat</h2>
+    ${termePrecis
+      ? `<p>Le présent contrat prend effet le <strong>${dateDebut}</strong> et est conclu pour une durée déterminée. Il prendra fin de plein droit et sans formalité le <strong>${dateFin}</strong>.</p>`
+      : `<p>Le présent contrat est conclu pour une durée minimale de <strong>${gw('duree_min')}</strong>, prenant effet le <strong>${dateDebut}</strong>. Au-delà de cette durée, il a pour terme la fin de l'événement pour lequel il a été conclu.</p>`
+    }
+    ${renouvellement !== 'Non'
+      ? `<p>Le présent contrat pourra être renouvelé <strong>${renouvellement.replace('Oui — ','')}</strong>, par accord entre les parties, sans que sa durée totale renouvellement(s) compris ne puisse excéder la durée maximale prévue par la loi ou la convention collective applicable. Les conditions du renouvellement feront l'objet d'un avenant à signer avant l'expiration du terme initial.</p>`
+      : ''
+    }
+    <p>À l'issue du présent contrat, sauf embauche en CDI, ${salref_lower(salRef)} percevra une <strong>indemnité de fin de contrat</strong> égale à 10 % de la rémunération totale brute perçue (article L. 1243-8 du Code du travail).</p>
+    ${essaiTextCDD}`;
+  }
+
+  // ─ Article emploi du temps ─
+  const jours = [
+    ['Lundi',    d.edt_lundi],
+    ['Mardi',    d.edt_mardi],
+    ['Mercredi', d.edt_mercredi],
+    ['Jeudi',    d.edt_jeudi],
+    ['Vendredi', d.edt_vendredi],
+    ['Samedi',   d.edt_samedi],
+    ['Dimanche', d.edt_dimanche],
+  ].filter(([j, v]) => v && v.trim());
+
+  const edtNote = d.edt_note || '';
+  const hasEdt = jours.length > 0;
+  
+  const articleEdtHTML = hasEdt ? `
+  <h2>Article ${isCDI ? '5bis' : '6bis'} — Répartition des horaires de travail</h2>
+  <p>La répartition de la durée du travail s'effectue comme suit :</p>
+  <table>
+    <tr><th style="width:35%">Jour</th><th>Horaires</th></tr>
+    ${jours.map(([j, v]) => `<tr><td><strong>${j}</strong></td><td>${v}</td></tr>`).join('')}
+  </table>
+  ${edtNote ? `<p>${edtNote}</p>` : ''}
+  <p>Cette répartition pourra être modifiée en fonction des nécessités de service, sous réserve d'un délai de prévenance de 7 jours (ou selon disposition conventionnelle).</p>` : '';
+
+  // ─ Article remuneration ─
+  let articleRem = `
+  <h2>Article ${isCDI ? '6' : '7'} — Rémunération</h2>
+  <p>En contrepartie de son travail, ${salRef} percevra une rémunération mensuelle brute de <strong>${salBrut} €</strong>, correspondant au salaire de base${tauxH !== '___________' ? ` et au taux horaire de <strong>${tauxH} €/heure</strong>` : ''}.
+  </p>
+  ${primes ? `<p>S'ajoutent à ce salaire de base les compléments ou accessoires de salaire suivants : <strong>${primes}</strong>.</p>` : ''}`;
+
+  function salref_lower(s) { return s; }
+
+  const html = `<!DOCTYPE html><html lang="fr"><head>
+  <meta charset="UTF-8">
+  <title>${typeLabel} — ${salPrenom} ${salNom}</title>
+  <style>
+    @page { margin: 2.5cm 2cm; }
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 30px; color: #111; font-size: 11pt; line-height: 1.8; }
+    .doc-header { text-align: center; margin-bottom: 30px; padding-bottom: 16px; border-bottom: 2px solid #111; }
+    .doc-header h1 { font-size: 14pt; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 6px; }
+    .doc-header .ref { font-size: 9pt; color: #555; }
+    .parties-block { margin: 20px 0; font-size: 10.5pt; }
+    .parties-block .entre { font-weight: bold; text-transform: uppercase; color: #555; font-size: 9pt; letter-spacing: 1px; margin-bottom: 6px; }
+    .separateur { text-align: center; color: #555; margin: 12px 0; font-size: 9pt; }
+    .convenu { font-weight: bold; text-align: center; margin: 20px 0; text-transform: uppercase; font-size: 9pt; letter-spacing: 2px; }
+    h2 { font-size: 10.5pt; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin: 24px 0 10px; }
+    p { margin: 8px 0; text-align: justify; font-size: 10.5pt; }
+    table { border-collapse: collapse; margin: 12px 0; font-size: 10pt; width: 100%; }
+    td, th { border: 1px solid #ccc; padding: 6px 10px; }
+    th { background: #f5f5f5; font-weight: bold; }
+    .signatures { display: flex; justify-content: space-between; margin-top: 60px; page-break-inside: avoid; }
+    .sig-block { width: 44%; }
+    .sig-line { border-bottom: 1px solid #333; margin-bottom: 6px; height: 60px; }
+    .sig-label { font-size: 9pt; color: #555; }
+    .footer-note { font-size: 8pt; color: #aaa; text-align: center; margin-top: 40px; border-top: 1px solid #eee; padding-top: 10px; }
+    .nb { font-size: 9pt; color: #555; font-style: italic; margin: 8px 0; }
+    .lieu-date { text-align: center; margin-top: 30px; font-size: 10pt; }
+    @media print { .no-print { display:none; } body { margin:0; } }
+  </style></head><body>
+
+  <div class="doc-header">
+    <h1>${typeLabel}</h1>
+    <div class="ref">Établi conformément au Code du travail français</div>
+  </div>
+
+  <div class="parties-block">
+    <div class="entre">Entre :</div>
+    <p>La société <strong>« ${empRef} »</strong>, dont le siège social est situé au <strong>${empAdresse}</strong>, immatriculée au Registre du Commerce et des Sociétés sous le numéro SIRET <strong>${empUrssaf}</strong>, représentée par <strong>${empSig}</strong>, ci-après dénommée « l'entreprise »,</p>
+    <div class="separateur">d'une part,</div>
+    <div class="entre">Et :</div>
+    <p><strong>${salCivil} ${salPrenom} ${salNom}</strong>, demeurant <strong>${gw('sal_adresse')}</strong>, ci-après dénommé${salAdj} « ${salRef} »,</p>
+    <div class="separateur">d'autre part,</div>
+  </div>
+
+  <div class="convenu">Il est convenu ce qui suit :</div>
+
+  <h2>Article 1 — Objet du contrat</h2>
+  <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} est recruté${salAdj} par l'entreprise en qualité de <strong>${poste}</strong> ${coeff} ${classif} de la convention collective <strong>${cc}</strong>.</p>
+
+  ${!isCDI ? articleDuree.split('<h2>Article 4')[0] : ''}
+
+  <h2>Article ${isCDI ? '2' : '3'} — Lieu de travail</h2>
+  ${d.emp_etablissement && d.emp_etablissement !== lieu
+      ? `<p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} exercera ses fonctions au <strong>${lieu}</strong>.</p>`
+      : `<p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} exercera ses fonctions au <strong>${lieu}</strong>.</p>`
+    }
+  ${deplacements ? `<p>En fonction des nécessités de service, ${salRef} pourra être amené${salAdj} à se déplacer.</p>` : ''}
+
+  ${isCDI ? articleDuree : articleDuree.split('<h2>Article 4')[1] ? '<h2>Article 4' + articleDuree.split('<h2>Article 4')[1] : ''}
+
+  <h2>Article ${isCDI ? '5' : '6'} — Durée du travail</h2>
+  ${articleDureeTravail}
+  ${articleEdtHTML}
+
+  ${articleRem}
+
+  <h2>Article ${isCDI ? '7' : '8'} — Congés payés</h2>
+  <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} bénéficiera de congés payés selon les conditions fixées par les dispositions légales et conventionnelles applicables. À l'issue du présent contrat, les congés payés non pris donneront lieu au versement d'une indemnité compensatrice de congés payés.</p>
+
+  <h2>Article ${isCDI ? '8' : '9'} — Sécurité sociale, retraite et prévoyance</h2>
+  <p>La caisse de retraite complémentaire à laquelle ${salRef} est affilié${salAdj} est <strong>${caisse}</strong>.</p>
+  <p>Par ailleurs, ${salPronMin} bénéficiera du régime de prévoyance souscrit par l'entreprise et géré par <strong>${prevoyance}</strong>.</p>
+  ${mutuelle ? `<p>${salPron} bénéficiera des prestations de la mutuelle obligatoire et collective de l'entreprise.</p>` : ''}
+
+  <h2>Article ${isCDI ? '9' : '10'} — Convention collective</h2>
+  <p>La convention collective applicable à ${salRef} est la suivante : <strong>${cc}</strong>.</p>
+
+  <div class="lieu-date">Fait à ___________, en deux exemplaires dont un est remis à ${salRef} et l'autre conservé par l'entreprise, le <strong>${today}</strong>.</div>
+
+  <div class="signatures">
+    <div class="sig-block">
+      <p style="font-size:9.5pt;font-weight:bold">Pour l'entreprise :<br>${gw('emp_civilite')} ${gw('emp_nom_prenom')}<br><em>${gw('emp_fonction')}</em></p>
+      <div class="sig-line"></div>
+      <div class="sig-label">Lu et approuvé</div>
+    </div>
+    <div class="sig-block">
+      <p style="font-size:9.5pt;font-weight:bold">${salCivil} ${salPrenom} ${salNom}</p>
+      <div class="sig-line"></div>
+      <div class="sig-label">Lu et approuvé — bon pour accord</div>
+    </div>
+  </div>
+
+  <div class="footer-note">Document généré par CoûtSalarié Pro v4.0 · Modèle basé sur code.travail.gouv.fr · ${today}<br>Ce document est fourni à titre d'aide à la rédaction. Pour toute situation complexe, consultez un juriste spécialisé en droit du travail.</div>
+
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => w.print(), 700);
+  // ── Sauvegarder dans l'historique ──
+  saveContractToHistory(html, WIZ.data);
+  showToast('📄 Contrat généré et sauvegardé !');
+}
+
+// ─── CSS WIZARD (injecté une seule fois) ───
+function injectWizCSS() {
+  if (document.getElementById('wiz-css')) return;
+  const s = document.createElement('style');
+  s.id = 'wiz-css';
+  s.textContent = `
+    .wiz-header { margin-bottom: 12px; }
+    .wiz-progress-bar { height: 4px; background: var(--slate-200); border-radius: 2px; margin-bottom: 6px; }
+    .wiz-progress-fill { height: 100%; background: var(--blue-600); border-radius: 2px; transition: width 0.3s ease; }
+    .wiz-step-label { font-size: 0.7rem; color: var(--slate-500); font-weight: 600; }
+    .wiz-card { padding: 18px 16px 14px; }
+    .wiz-title { font-size: 1rem; font-weight: 800; color: var(--blue-900); margin-bottom: 4px; }
+    .wiz-subtitle { font-size: 0.75rem; color: var(--slate-500); margin-bottom: 14px; }
+    .wiz-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .wiz-choice {
+      border: 2px solid var(--slate-200); border-radius: 12px;
+      padding: 16px 12px; text-align: center; cursor: pointer;
+      background: var(--white); transition: all 0.15s;
+    }
+    .wiz-choice:hover { border-color: var(--blue-500); }
+    .wiz-choice.selected { border-color: var(--blue-600); background: var(--blue-50); }
+    .wiz-choice-icon { font-size: 1.8rem; display: block; margin-bottom: 6px; }
+    .wiz-choice-label { font-size: 0.9rem; font-weight: 800; color: var(--blue-900); }
+    .wiz-choice-sub { font-size: 0.65rem; color: var(--slate-500); margin-top: 2px; }
+    .wiz-nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 12px; }
+    .wiz-btn-next { flex: 1; }
+    .wiz-btn-back { flex: 0 0 auto; background: var(--slate-100); color: var(--slate-700); }
+    .wiz-toggle-wrap { display: flex; gap: 8px; margin-top: 4px; }
+    .wiz-toggle-btn {
+      flex: 1; padding: 8px; border-radius: 8px;
+      border: 2px solid var(--slate-200); background: var(--white);
+      font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.15s;
+      font-family: 'DM Sans', sans-serif; color: var(--slate-700);
+    }
+    .wiz-toggle-btn.active { border-color: var(--blue-600); background: var(--blue-50); color: var(--blue-700); }
+    .req { color: var(--red-600); font-size: 0.75rem; }
+    .recap-table { margin: 4px 0 12px; }
+    .recap-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--slate-100); font-size: 0.8rem; gap: 10px; }
+    .recap-key { color: var(--slate-500); font-weight: 500; flex: 0 0 40%; }
+    .recap-val { font-weight: 700; color: var(--blue-900); text-align: right; flex: 1; }
+  `;
+  document.head.appendChild(s);
+}
+
+
+// ═══════════════════════════════════════════
+// HISTORIQUE CONTRATS
+// ═══════════════════════════════════════════
+const CONTRACTS_KEY = 'spp_contracts';
+
+function loadContracts() {
+  try { return JSON.parse(localStorage.getItem(CONTRACTS_KEY) || '[]'); } catch { return []; }
+}
+
+function saveContractToHistory(html, data) {
+  let contracts = loadContracts();
+  const entry = {
+    id: Date.now(),
+    date: new Date().toLocaleDateString('fr-FR'),
+    time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}),
+    type: data.type || 'cdi',
+    salarie: (data.sal_prenom || '') + ' ' + (data.sal_nom || ''),
+    societe: data.emp_denomination || '',
+    poste: data.poste_fonction || '',
+    html: html   // le contrat complet sauvegardé
+  };
+  contracts.unshift(entry);
+  if (contracts.length > 30) contracts = contracts.slice(0, 30);
+  localStorage.setItem(CONTRACTS_KEY, JSON.stringify(contracts));
+  renderContracts();
+}
+
+function clearContracts() {
+  if (!confirm('Effacer tous les contrats sauvegardés ?')) return;
+  localStorage.removeItem(CONTRACTS_KEY);
+  renderContracts();
+}
+
+function deleteContract(id) {
+  let contracts = loadContracts().filter(c => c.id !== id);
+  localStorage.setItem(CONTRACTS_KEY, JSON.stringify(contracts));
+  renderContracts();
+}
+
+function viewContract(id) {
+  const contracts = loadContracts();
+  const entry = contracts.find(c => c.id === id);
+  if (!entry) { showToast('Contrat introuvable'); return; }
+  const w = window.open('', '_blank');
+  w.document.write(entry.html);
+  w.document.close();
+}
+
+function shareContractByMail(id) {
+  const contracts = loadContracts();
+  const entry = contracts.find(c => c.id === id);
+  if (!entry) return;
+  const typeLabel = entry.type === 'cdi' ? 'CDI' : 'CDD';
+  const subject = encodeURIComponent(`Contrat de travail ${typeLabel} — ${entry.salarie}`);
+  const body = encodeURIComponent(
+    `Bonjour,\n\nVeuillez trouver ci-joint le contrat de travail ${typeLabel} établi pour ${entry.salarie} au poste de ${entry.poste}.\n\nCe contrat a été généré le ${entry.date} à ${entry.time} via CoûtSalarié Pro.\n\nNB : Pour envoyer le document en pièce jointe, ouvrez le contrat (bouton 👁 Consulter), imprimez-le en PDF depuis votre navigateur, puis joignez-le à cet email.\n\nCordialement,\n${entry.societe}`
+  );
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+function renderContracts() {
+  const list = document.getElementById('hist-contracts-list');
+  if (!list) return;
+  const contracts = loadContracts();
+  if (!contracts.length) {
+    list.innerHTML = `<div class="empty-state">
+      <span class="empty-icon">📝</span>
+      <p class="empty-text">Aucun contrat généré pour l'instant.<br>Créez votre premier contrat dans l'onglet <strong>📝 Contrats</strong> !</p>
+    </div>`;
+    return;
+  }
+  // Badge sur le bouton d'onglet
+  const tabBtn = document.getElementById('htab-contrats');
+  if (tabBtn) tabBtn.textContent = `📝 Contrats payés (${contracts.length})`;
+  list.innerHTML = contracts.map(c => {
+    const typeLabel = (c.type || 'cdi').toUpperCase();
+    const isCDD = c.type === 'cdd';
+    return `
+    <div class="contract-hist-item">
+      <div class="contract-hist-header">
+        <div>
+          <span class="contract-hist-type ${isCDD ? 'cdd' : ''}">📋 ${typeLabel}</span>
+          <div class="contract-hist-name">${c.salarie || '—'}</div>
+          <div class="contract-hist-meta">${c.poste || '—'} · ${c.societe || '—'}</div>
+        </div>
+        <div class="contract-hist-date">${c.date}<br>${c.time}</div>
+      </div>
+      <div class="contract-hist-actions">
+        <button class="btn-hist-view" onclick="viewContract(${c.id})">👁 Consulter</button>
+        <button class="btn-hist-mail" onclick="shareContractByMail(${c.id})">✉️ Partager</button>
+        <button class="btn-hist-del" onclick="deleteContract(${c.id})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function switchHistTab(tab) {
+  document.getElementById('hist-simul-panel').style.display     = tab === 'simul'     ? 'block' : 'none';
+  document.getElementById('hist-promesses-panel').style.display = tab === 'promesses' ? 'block' : 'none';
+  document.getElementById('hist-contrats-panel').style.display  = tab === 'contrats'  ? 'block' : 'none';
+  document.getElementById('htab-simul').classList.toggle('active',     tab === 'simul');
+  document.getElementById('htab-promesses').classList.toggle('active', tab === 'promesses');
+  document.getElementById('htab-contrats').classList.toggle('active',  tab === 'contrats');
+  if (tab === 'contrats')  renderContracts();
+  if (tab === 'promesses') renderPromesses();
+}
+
+function clearPromesses() {
+  if (!confirm('Effacer toutes les promesses sauvegardées ?')) return;
+  localStorage.removeItem(PROMISES_KEY);
+  renderPromesses();
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// WIZARD PROMESSE D'EMBAUCHE
+// ═══════════════════════════════════════════════════════════════
+const PROM = { step: 0, data: {}, paid: false, generated: false };
+
+function promGetSteps() {
+  return [
+    {
+      id: 'entreprise',
+      title: "🏢 L'entreprise",
+      subtitle: 'Informations sur votre société',
+      fields: [
+        { id: 'emp_civilite',    label: 'Civilité du signataire',   type: 'select',  options: ['M.','Mme'], required: true },
+        { id: 'emp_nom_prenom',  label: 'Nom & prénom du signataire', type: 'text',  placeholder: 'Jean Dupont', required: true },
+        { id: 'emp_fonction',    label: 'Fonction du signataire',   type: 'text',    placeholder: 'Gérant, Président…', required: true },
+        { id: 'emp_denomination',label: 'Nom de la société',        type: 'text',    placeholder: 'SARL Martin & Fils', required: true },
+        { id: 'emp_adresse',     label: 'Adresse du siège social',  type: 'text',    placeholder: '12 rue de la Paix, 75001 Paris', required: true },
+        { id: 'emp_urssaf',      label: 'SIRET',                    type: 'text',    placeholder: '123 456 789 00012', required: false },
+      ]
+    },
+    {
+      id: 'candidat',
+      title: '👤 Le/La candidat(e)',
+      subtitle: 'Identité de la personne recrutée',
+      fields: [
+        { id: 'sal_civilite', label: 'Civilité',          type: 'select', options: ['M.','Mme'], required: true },
+        { id: 'sal_nom',      label: 'Nom',               type: 'text',   placeholder: 'DURAND', required: true },
+        { id: 'sal_prenom',   label: 'Prénom',            type: 'text',   placeholder: 'Marie', required: true },
+        { id: 'sal_adresse',  label: 'Adresse complète',  type: 'text',   placeholder: '5 avenue des Lilas, 69001 Lyon', required: false }
+      ]
+    },
+    {
+      id: 'poste',
+      title: '📋 Le poste proposé',
+      subtitle: null,
+      fields: [
+        { id: 'poste_fonction', label: 'Intitulé du poste',         type: 'text',   placeholder: 'Responsable commercial', required: true },
+        { id: 'poste_type',     label: 'Nature du contrat',         type: 'select', options: ['CDI','CDD','Apprentissage','Stage'], required: true },
+        { id: 'sal_brut',       label: 'Salaire brut mensuel (€)',  type: 'number', placeholder: '2 200', required: true },
+        { id: 'heures_hebdo',   label: 'Durée hebdomadaire (h)',    type: 'number', placeholder: '35', required: true },
+        { id: 'date_debut',     label: 'Date de prise de poste',    type: 'date',   required: false },
+        { id: 'poste_lieu',     label: 'Lieu de travail',           type: 'text',   placeholder: '12 rue de la Paix, 75001 Paris', required: false },
+        { id: 'delai_option',   label: "Délai d'option accordé au candidat", type: 'select',
+          options: ['3 jours ouvrés','5 jours ouvrés','7 jours ouvrés','10 jours ouvrés','15 jours ouvrés'], required: true }
+      ]
+    },
+    {
+      id: 'recap',
+      title: '✅ Récapitulatif',
+      subtitle: 'Vérifiez les informations avant génération',
+      fields: []
+    }
+  ];
+}
+
+function promInitWithProfile() {
+  PROM.step = 0;
+  PROM.data = {};
+  PROM.paid = false;
+  PROM.generated = false;
+  const p = loadProfile();
+  if (p.emp_denomination) {
+    PROM.data.emp_civilite     = p.emp_civilite || 'M.';
+    PROM.data.emp_nom_prenom   = p.emp_nom_prenom || '';
+    PROM.data.emp_fonction     = p.emp_fonction || '';
+    PROM.data.emp_denomination = p.emp_denomination || '';
+    PROM.data.emp_adresse      = p.emp_adresse || '';
+    PROM.data.emp_urssaf       = p.emp_urssaf || '';
+    PROM.data._profileLoaded   = true;
+  }
+  // Lieu de travail depuis profil
+  if (!PROM.data.poste_lieu) {
+    PROM.data.poste_lieu = p.emp_etablissement || p.emp_adresse || '';
+  }
+  promRender();
+}
+
+function promRender() {
+  const container = document.getElementById('prom-container');
+  if (!container) return;
+  const steps = promGetSteps();
+  const step = steps[PROM.step];
+  const total = steps.length;
+  const pct = Math.round((PROM.step / (total - 1)) * 100);
+
+  // ── En-tête ──
+  let html = `
+  <div class="wiz-header">
+    <div class="wiz-progress-bar"><div class="wiz-progress-fill" style="width:${pct}%"></div></div>
+    <div class="wiz-step-label">Étape ${PROM.step + 1}/${total} — ${step.title}</div>
+  </div>
+  <div class="card wiz-card">
+    <div class="wiz-title">${step.title}</div>
+    ${step.subtitle ? `<div class="wiz-subtitle">${step.subtitle}</div>` : ''}`;
+
+  // ── Contenu selon étape ──
+  if (step.id === 'recap') {
+    html += promBuildRecap();
+    if (!PROM.paid) {
+      html += `
+      <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:10px;padding:14px;margin:14px 0;text-align:center">
+        <div style="font-size:1.3rem;margin-bottom:4px">✉️</div>
+        <div style="font-weight:800;color:#92400e;font-size:0.88rem">Promesse d'embauche officielle</div>
+        <div style="font-size:0.72rem;color:#78350f;margin:4px 0 10px">Document à valeur contractuelle • Article L.1221-5 du Code du travail</div>
+        <div style="font-size:1.4rem;font-weight:900;color:#0f172a">${prixLabel(prixPromesse())}</div>
+        <div style="font-size:0.65rem;color:#78350f;margin-top:2px">Généré instantanément · Téléchargeable · Sauvegardé dans l'historique</div>
+      </div>
+      <button class="btn btn-success" onclick="promPay()">💳 Payer et générer — ${prixLabel(prixPromesse())}</button>`;
+    } else {
+      html += `
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:12px;text-align:center;margin:12px 0">
+        <div style="font-weight:800;color:#16a34a">✅ Paiement validé</div>
+        <div style="font-size:0.72rem;color:#166534;margin-top:3px">Votre promesse a été générée et sauvegardée</div>
+      </div>
+      <button class="btn btn-primary" onclick="promGenerate()" style="margin-bottom:8px">📄 Télécharger à nouveau</button>
+      <div style="background:#fffbeb;border:1.5px solid #fcd34d;border-radius:10px;padding:12px;margin-top:14px">
+        <div style="font-weight:800;color:#92400e;font-size:0.85rem;margin-bottom:6px">🔄 Convertir en contrat de travail</div>
+        <div style="font-size:0.72rem;color:#78350f;margin-bottom:10px">Toutes vos informations sont déjà pré-remplies. Vous n'aurez qu'à compléter les détails manquants (durée, emploi du temps, etc.).</div>
+        <button class="btn btn-warning" onclick="promConvertToContract()" style="background:#f59e0b;color:white;border:none">📝 Générer le contrat — ${prixLabel(prixContrat())}</button>
+      </div>
+      <button class="btn btn-secondary" onclick="promInitWithProfile()" style="margin-top:8px">✏️ Nouvelle promesse</button>`;
+    }
+  } else {
+    // Champs normaux
+    for (const f of step.fields) {
+      const val = PROM.data[f.id] || '';
+      const req = f.required ? ' <span class="req">*</span>' : '';
+      html += `<div class="form-group"><label>${f.label}${req}</label>`;
+      if (f.type === 'select') {
+        html += `<select id="pr_${f.id}" onchange="PROM.data['${f.id}']=this.value">
+          ${f.options.map(o => `<option${o === val ? ' selected' : ''}>${o}</option>`).join('')}
+        </select>`;
+      } else if (f.type === 'date') {
+        html += `<input type="date" id="pr_${f.id}" value="${val}" onchange="PROM.data['${f.id}']=this.value">`;
+      } else {
+        html += `<input type="${f.type}" id="pr_${f.id}" placeholder="${f.placeholder || ''}" value="${val}" oninput="PROM.data['${f.id}']=this.value">`;
+      }
+      html += '</div>';
+    }
+  }
+
+  // ── Navigation ──
+  html += '<div class="wiz-nav">';
+  if (PROM.step > 0) {
+    html += `<button class="btn btn-secondary wiz-btn-back" onclick="promBack()">← Retour</button>`;
+  }
+  if (step.id !== 'recap') {
+    html += `<button class="btn btn-primary wiz-btn-next" onclick="promNext()">Suivant →</button>`;
+  }
+  html += '</div>';
+
+  // Badge profil
+  if (PROM.step === 0 && PROM.data._profileLoaded) {
+    html += `<div style="margin-top:10px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:8px 12px;font-size:0.7rem;color:#166534;font-weight:700">✅ Profil employeur pré-rempli</div>`;
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+
+  // Restaurer valeurs après rendu
+  for (const f of step.fields) {
+    if (f.type === 'select' || f.type === 'date' || f.type === 'choice') continue;
+    const el = document.getElementById('pr_' + f.id);
+    if (el && PROM.data[f.id]) el.value = PROM.data[f.id];
+  }
+  // Lieu de travail auto
+  if (step.id === 'poste') {
+    setTimeout(() => {
+      const el = document.getElementById('pr_poste_lieu');
+      if (el && !el.value && PROM.data.poste_lieu) el.value = PROM.data.poste_lieu;
+    }, 30);
+  }
+}
+
+function promCollectStep() {
+  const steps = promGetSteps();
+  const step = steps[PROM.step];
+  for (const f of step.fields) {
+    if (f.type === 'select' || f.type === 'date') continue;
+    const el = document.getElementById('pr_' + f.id);
+    if (el) PROM.data[f.id] = el.value;
+  }
+  // Collect selects too
+  for (const f of step.fields) {
+    if (f.type === 'select') {
+      const el = document.getElementById('pr_' + f.id);
+      if (el) PROM.data[f.id] = el.value;
+    }
+    if (f.type === 'date') {
+      const el = document.getElementById('pr_' + f.id);
+      if (el) PROM.data[f.id] = el.value;
+    }
+  }
+}
+
+function promNext() {
+  promCollectStep();
+  const steps = promGetSteps();
+  if (PROM.step < steps.length - 1) {
+    PROM.step++;
+    promRender();
+    document.getElementById('prom-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function promBack() {
+  promCollectStep();
+  if (PROM.step > 0) {
+    PROM.step--;
+    promRender();
+    document.getElementById('prom-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function promBuildRecap() {
+  const d = PROM.data;
+  const fmt = v => v || '<span style="color:#f59e0b">—</span>';
+  const rows = [
+    ['Société',             fmt(d.emp_denomination)],
+    ['Siège',               fmt(d.emp_adresse)],
+    ['Signataire',          fmt(`${d.emp_civilite||''} ${d.emp_nom_prenom||''} — ${d.emp_fonction||''}`)],
+    ['SIRET',               fmt(d.emp_urssaf)],
+    ['Candidat(e)',         fmt(`${d.sal_civilite||''} ${d.sal_prenom||''} ${d.sal_nom||''}`)],
+    ['Poste',               fmt(d.poste_fonction)],
+    ['Nature du contrat',   fmt(d.poste_type)],
+    ['Salaire brut',        fmt(d.sal_brut ? d.sal_brut + ' €/mois' : '')],
+    ['Durée hebdo',         fmt(d.heures_hebdo ? d.heures_hebdo + 'h' : '')],
+    ['Prise de poste',      fmt(d.date_debut ? new Date(d.date_debut).toLocaleDateString('fr-FR') : '')],
+    ['Lieu de travail',     fmt(d.poste_lieu)],
+    ["Délai d'option",     fmt(d.delai_option)],
+  ];
+  let html = '<div class="recap-table">';
+  for (const [k,v] of rows) {
+    html += `<div class="recap-row"><div class="recap-key">${k}</div><div class="recap-val">${v}</div></div>`;
+  }
+  return html + '</div>';
+}
+
+function promPay() {
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:white;border-radius:16px;padding:24px;width:100%;max-width:360px;text-align:center;font-family:'DM Sans',sans-serif">
+      <div style="font-size:2.2rem;margin-bottom:10px">✉️</div>
+      <div style="font-size:1rem;font-weight:800;margin-bottom:4px;color:#0f172a">Paiement sécurisé</div>
+      <div style="font-size:0.72rem;color:#64748b;margin-bottom:20px">Simulation Stripe — en production, le vrai formulaire Stripe s'affiche ici</div>
+      <div style="background:#fffbeb;border-radius:8px;padding:12px 14px;margin-bottom:18px;text-align:left">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:0.82rem;font-weight:600">Promesse d'embauche — Article L.1221-5 CT</span>
+          <span style="font-size:0.9rem;font-weight:800;color:#0f172a">${prixLabel(prixPromesse())}</span>
+        </div>
+        <div style="font-size:0.65rem;color:#94a3b8">Générée instantanément · Téléchargeable · Sauvegardée</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+        <div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;font-size:0.7rem;color:#64748b;text-align:left">
+          <div style="font-weight:700;color:#0f172a;margin-bottom:2px">💳 Numéro de carte</div>
+          <div style="color:#cbd5e1;font-size:0.65rem">•••• •••• •••• ••••</div>
+        </div>
+        <div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;font-size:0.7rem;color:#64748b;text-align:left">
+          <div style="font-weight:700;color:#0f172a;margin-bottom:2px">📅 Expiration</div>
+          <div style="color:#cbd5e1;font-size:0.65rem">MM / AA</div>
+        </div>
+      </div>
+      <button id="prom-pay-btn" onclick="promConfirmPay(this)" style="background:linear-gradient(135deg,#d97706,#b45309);color:white;width:100%;padding:13px;border-radius:10px;border:none;font-weight:800;font-size:0.9rem;cursor:pointer;margin-bottom:8px;font-family:'DM Sans',sans-serif;box-shadow:0 4px 12px rgba(217,119,6,0.35)">
+        ✅ Confirmer le paiement — ${prixLabel(prixPromesse())}
+      </button>
+      <button onclick="this.closest('[style*=fixed]').remove()" style="background:#f1f5f9;color:#334155;width:100%;padding:10px;border-radius:10px;border:none;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
+        Annuler
+      </button>
+      <div style="font-size:0.6rem;color:#94a3b8;margin-top:10px">🔒 Paiement chiffré · Jamais de données stockées</div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function promConfirmPay(btn) {
+  btn.innerHTML = '⏳ Traitement en cours...';
+  btn.disabled = true;
+  btn.style.opacity = '0.7';
+  setTimeout(() => {
+    btn.closest('[style*="fixed"]').remove();
+    PROM.paid = true;
+    promRender();
+    showToast('✅ Paiement validé ! Votre promesse est prête.');
+    promGenerate();
+  }, 1800);
+}
+
+function promGenerate() {
+  const d = PROM.data;
+  const today = new Date().toLocaleDateString('fr-FR');
+  const salCivil = d.sal_civilite || 'M.';
+  const salNomPrenom = `${d.sal_prenom || '___'} ${d.sal_nom || '___'}`;
+  const empSig = `${d.emp_civilite || ''} ${d.emp_nom_prenom || '___'}, ${d.emp_fonction || '___'}`;
+  const dateDebut = d.date_debut ? new Date(d.date_debut).toLocaleDateString('fr-FR') : '___________';
+  const sal = d.sal_brut ? Number(d.sal_brut).toLocaleString('fr-FR') : '___________';
+
+  const html = `<!DOCTYPE html><html lang="fr"><head>
+  <meta charset="UTF-8">
+  <title>Promesse d'embauche — ${salNomPrenom}</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 750px; margin: 40px auto; padding: 40px; color: #1a1a2e; font-size: 13px; line-height: 1.7; }
+    h1 { text-align:center; font-size:18px; text-transform:uppercase; letter-spacing:2px; margin-bottom:6px; }
+    .subtitle { text-align:center; font-size:11px; color:#666; margin-bottom:30px; }
+    .header-box { display:flex; justify-content:space-between; margin-bottom:28px; font-size:12px; gap:12px; }
+    .box { border:1px solid #ccc; padding:12px 16px; border-radius:4px; flex:1; }
+    .box h3 { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#666; margin:0 0 6px; }
+    .box p { margin:2px 0; }
+    h2 { font-size:13px; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid #1a1a2e; padding-bottom:4px; margin-top:24px; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    td { padding:6px 10px; border:1px solid #e2e8f0; font-size:12px; }
+    td:first-child { font-weight:bold; background:#f8fafc; width:40%; }
+    .signature { display:flex; justify-content:space-between; margin-top:50px; gap:20px; }
+    .sig-block { text-align:center; flex:1; }
+    .sig-line { width:180px; border-bottom:1px solid #333; margin:40px auto 6px; }
+    .sig-label { font-size:11px; color:#666; }
+    .footer-doc { text-align:center; font-size:10px; color:#999; margin-top:40px; border-top:1px solid #eee; padding-top:12px; }
+    @media print { body { margin:0; padding:30px; } }
+  </style></head><body>
+  <h1>Promesse d'Embauche</h1>
+  <p class="subtitle">Article L.1221-5 et suivants du Code du travail — Document à valeur contractuelle</p>
+
+  <div class="header-box">
+    <div class="box">
+      <h3>Employeur</h3>
+      <p><strong>${d.emp_denomination || '___'}</strong></p>
+      ${d.emp_urssaf ? `<p>SIRET : ${d.emp_urssaf}</p>` : ''}
+      <p>${d.emp_adresse || '___'}</p>
+      <p>Représentée par : ${empSig}</p>
+    </div>
+    <div class="box">
+      <h3>Candidat(e)</h3>
+      <p><strong>${salCivil} ${salNomPrenom}</strong></p>
+      ${d.sal_adresse ? `<p>${d.sal_adresse}</p>` : ''}
+    </div>
+  </div>
+
+  <h2>Article 1 — Objet de la promesse</h2>
+  <p>La société <strong>${d.emp_denomination || '___'}</strong>, représentée par <strong>${empSig}</strong>, s'engage formellement à employer <strong>${salCivil} ${salNomPrenom}</strong> aux conditions suivantes :</p>
+  <table>
+    <tr><td>Poste proposé</td><td><strong>${d.poste_fonction || '___'}</strong></td></tr>
+    <tr><td>Nature du contrat</td><td>${d.poste_type || 'CDI'}</td></tr>
+    <tr><td>Date de prise de poste</td><td>${dateDebut}</td></tr>
+    <tr><td>Durée hebdomadaire de travail</td><td>${d.heures_hebdo || '35'} heures</td></tr>
+    <tr><td>Salaire brut mensuel</td><td><strong>${sal} €</strong></td></tr>
+    ${d.poste_lieu ? `<tr><td>Lieu de travail</td><td>${d.poste_lieu}</td></tr>` : ''}
+  </table>
+
+  <h2>Article 2 — Conditions suspensives</h2>
+  <p>La présente promesse est consentie sous réserve de la présentation, avant la date de prise de poste, des documents légaux suivants : titre de séjour en cours de validité (si nécessaire), aptitude médicale délivrée par la médecine du travail, et le cas échéant, casier judiciaire vierge si le poste l'exige. ${salCivil === 'Mme' ? 'La candidate' : 'Le candidat'} s'engage à informer l'entreprise de toute modification substantielle de sa situation dans les 48 heures.</p>
+
+  <h2>Article 3 — Force obligatoire de la promesse</h2>
+  <p>Conformément à la jurisprudence de la Chambre sociale de la Cour de cassation (arrêt du 21 septembre 2017, n° 16-20.103), la présente promesse unilatérale d'embauche vaut contrat de travail. La rétractation de l'offre par l'employeur pendant le délai d'option n'empêche pas la formation du contrat et engage sa responsabilité contractuelle.</p>
+
+  <h2>Article 4 — Délai d'option</h2>
+  <p>${salCivil === 'Mme' ? 'La candidate' : 'Le candidat'} dispose d'un délai de <strong>${d.delai_option || '5 jours ouvrés'}</strong> à compter de la réception du présent document pour faire connaître sa décision par écrit (courrier recommandé avec AR ou email avec accusé de réception) à l'attention de ${empSig}.</p>
+  <p>Passé ce délai sans réponse, la présente promesse sera considérée comme caduque.</p>
+
+  <h2>Article 5 — Confidentialité</h2>
+  <p>Les parties s'engagent à traiter comme strictement confidentielles les informations échangées dans le cadre du présent processus de recrutement.</p>
+
+  <div class="signature">
+    <div class="sig-block">
+      <div class="sig-line"></div>
+      <p class="sig-label">Pour l'employeur<br><em>${empSig}</em><br>Signature précédée de la mention « Lu et approuvé »</p>
+    </div>
+    <div class="sig-block">
+      <div class="sig-line"></div>
+      <p class="sig-label">${salCivil === 'Mme' ? 'La candidate' : 'Le candidat'}<br><em>${salCivil} ${salNomPrenom}</em><br>Signature précédée de la mention « Lu et approuvé »</p>
+    </div>
+  </div>
+
+  <p class="footer-doc">Fait en deux exemplaires originaux — ${today} — Document généré par CoûtSalarié Pro<br>
+  Ce document est fourni à titre d'aide à la rédaction. Pour toute situation complexe, consultez un juriste spécialisé en droit du travail.</p>
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => w.print(), 600);
+
+  // Sauvegarder dans l'historique
+  savePromesseToHistory(html, d);
+  showToast('✉️ Promesse générée et sauvegardée !');
+}
+
+// ─── Convertir la promesse en contrat ───
+function promConvertToContract() {
+  const d = PROM.data;
+  // Transférer les données vers le wizard contrat
+  WIZ.step = 0;
+  WIZ.paid = false;
+  WIZ.contractGenerated = false;
+  WIZ.data = {
+    // Entreprise
+    emp_civilite:     d.emp_civilite     || '',
+    emp_nom_prenom:   d.emp_nom_prenom   || '',
+    emp_fonction:     d.emp_fonction     || '',
+    emp_denomination: d.emp_denomination || '',
+    emp_adresse:      d.emp_adresse      || '',
+    emp_urssaf:       d.emp_urssaf       || '',
+    // Salarié
+    sal_civilite:     d.sal_civilite     || '',
+    sal_nom:          d.sal_nom          || '',
+    sal_prenom:       d.sal_prenom       || '',
+    sal_adresse:      d.sal_adresse      || '',
+    // Poste
+    poste_fonction:   d.poste_fonction   || '',
+    poste_lieu:       d.poste_lieu       || '',
+    // Durée
+    heures_hebdo:     d.heures_hebdo     || '',
+    // Rémunération
+    sal_brut:         d.sal_brut         || '',
+    // Date
+    date_debut:       d.date_debut       || '',
+    // Type déduit de la promesse
+    type: (d.poste_type === 'CDD') ? 'cdd' : 'cdi',
+    _fromPromesse: true,
+  };
+
+  // Aller sur l'onglet Contrats
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // Activer onglet contrats
+  const contratsTab = Array.from(tabs).find(t => t.textContent.includes('Contrats'));
+  if (contratsTab) contratsTab.classList.add('active');
+  document.getElementById('page-contrats').classList.add('active');
+  injectWizCSS();
+
+  // Aller directement à l'étape 2 (on a déjà le type)
+  WIZ.step = 1; // étape entreprise
+  wizRender();
+
+  // Scroller vers le haut
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  showToast('📝 Données transférées ! Complétez votre contrat CDI/CDD.');
+}
+
+// ─── Historique promesses ───
+const PROMISES_KEY = 'spp_promises';
+
+function loadPromesses() {
+  try { return JSON.parse(localStorage.getItem(PROMISES_KEY) || '[]'); } catch { return []; }
+}
+
+function savePromesseToHistory(html, data) {
+  let promises = loadPromesses();
+  const entry = {
+    id: Date.now(),
+    date: new Date().toLocaleDateString('fr-FR'),
+    time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}),
+    salarie:  (data.sal_prenom || '') + ' ' + (data.sal_nom || ''),
+    societe:  data.emp_denomination || '',
+    poste:    data.poste_fonction   || '',
+    typeContrat: data.poste_type    || 'CDI',
+    html: html
+  };
+  promises.unshift(entry);
+  if (promises.length > 30) promises = promises.slice(0, 30);
+  localStorage.setItem(PROMISES_KEY, JSON.stringify(promises));
+  renderPromesses();
+}
+
+function deletePromesse(id) {
+  let promises = loadPromesses().filter(p => p.id !== id);
+  localStorage.setItem(PROMISES_KEY, JSON.stringify(promises));
+  renderPromesses();
+}
+
+function viewPromesse(id) {
+  const p = loadPromesses().find(p => p.id === id);
+  if (!p) return;
+  const w = window.open('', '_blank');
+  w.document.write(p.html);
+  w.document.close();
+}
+
+function sharePromesseByMail(id) {
+  const p = loadPromesses().find(p => p.id === id);
+  if (!p) return;
+  const subject = encodeURIComponent(`Promesse d'embauche — ${p.salarie} — ${p.poste}`);
+  const body = encodeURIComponent(
+    `Bonjour,\n\nVeuillez trouver ci-joint la promesse d'embauche établie pour ${p.salarie} au poste de ${p.poste}.\n\nCe document a été généré le ${p.date} à ${p.time} via CoûtSalarié Pro.\n\nPour envoyer le document en pièce jointe : ouvrez la promesse (bouton 👁 Consulter), imprimez-la en PDF, puis joignez-la à cet email.\n\nCordialement,\n${p.societe}`
+  );
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+function renderPromesses() {
+  const list = document.getElementById('hist-promises-list');
+  if (!list) return;
+  const promises = loadPromesses();
+  const tabBtn = document.getElementById('htab-promesses');
+  if (tabBtn) tabBtn.textContent = `✉️ Promesses (${promises.length})`;
+  if (!promises.length) {
+    list.innerHTML = `<div class="empty-state">
+      <span class="empty-icon">✉️</span>
+      <p class="empty-text">Aucune promesse générée pour l'instant.<br>Créez votre première promesse dans l'onglet <strong>✉️ Promesse</strong> !</p>
+    </div>`;
+    return;
+  }
+  list.innerHTML = promises.map(p => `
+    <div class="contract-hist-item">
+      <div class="contract-hist-header">
+        <div>
+          <span class="contract-hist-type" style="background:#d97706">✉️ PROMESSE ${p.typeContrat || 'CDI'}</span>
+          <div class="contract-hist-name">${p.salarie || '—'}</div>
+          <div class="contract-hist-meta">${p.poste || '—'} · ${p.societe || '—'}</div>
+        </div>
+        <div class="contract-hist-date">${p.date}<br>${p.time}</div>
+      </div>
+      <div class="contract-hist-actions">
+        <button class="btn-hist-view" onclick="viewPromesse(${p.id})">👁 Consulter</button>
+        <button class="btn-hist-mail" onclick="sharePromesseByMail(${p.id})">✉️ Partager</button>
+        <button class="btn-hist-del" onclick="deletePromesse(${p.id})">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+
+// ═══════════════════════════════════════════
+// ÉCRAN D'ACCUEIL & UPSELL
+// ═══════════════════════════════════════════
+function welcomeClose() {
+  document.getElementById('welcome-overlay').style.display = 'none';
+}
+
+function welcomeGo(page) {
+  welcomeClose();
+  const tab = Array.from(document.querySelectorAll('.tab')).find(t => {
+    const map = { simulation:'Simulation', comparateur:'Comparateur', promesse:'Promesse', contrats:'Contrat', historique:'Historique' };
+    return t.textContent.includes(map[page] || page);
+  });
+  if (tab) showPage(page, tab);
+}
+
+function upsellGo(page) {
+  const tab = Array.from(document.querySelectorAll('.tab')).find(t => {
+    const map = { promesse:'Promesse', contrats:'Contrat' };
+    return t.textContent.includes(map[page] || page);
+  });
+  if (tab) showPage(page, tab);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+
+function applyConfig() {
+  const c = loadConfig();
+  const pp = prixPromesse();
+  const pc = prixContrat();
+
+  // Onglets
+  const np = document.getElementById('nav-prix-promesse');
+  const nc = document.getElementById('nav-prix-contrat');
+  if (np) np.textContent = pp + '€';
+  if (nc) nc.textContent = pc + '€';
+
+  // Upsell bannière
+  const up = document.getElementById('upsell-prix-promesse');
+  const uc = document.getElementById('upsell-prix-contrat');
+  if (up) up.textContent = pp + ' €';
+  if (uc) uc.textContent = pc + ' €';
+
+  // Bannière promo globale
+  const pb = document.getElementById('promo-banner');
+  if (pb) {
+    if (c.promo_active && c.promo_label) {
+      pb.style.display = 'block';
+      pb.innerHTML = promoHTML(c);
+    } else {
+      pb.style.display = 'none';
+    }
+  }
+
+  // Nom & tagline
+  const logo = document.querySelector('.app-title');
+  if (logo && c.app_nom) logo.textContent = c.app_nom;
+  const wt = document.querySelector('.welcome-tagline');
+  if (wt && c.app_tagline) wt.textContent = c.app_tagline;
+}
+
+function promoHTML(c) {
+  let html = '<span style="font-weight:900">' + c.promo_label + '</span>';
+  if (c.promo_fin) {
+    const fin = new Date(c.promo_fin);
+    const now = new Date();
+    const diff = Math.ceil((fin - now) / 86400000);
+    if (diff > 0) html += ' <span style="opacity:0.8;font-size:0.7rem">· encore ' + diff + ' jour' + (diff>1?'s':'') + '</span>';
+  }
+  return html;
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// ⚙️ PANNEAU ADMIN
+// ═══════════════════════════════════════════════════════════════
+let adminLoggedIn = false;
+
+// ─── Détection tap caché sur le logo (3 taps en moins de 1,5s) ───
+let _tapCount = 0;
+let _tapTimer = null;
+const _TAP_REQUIRED = 5; // 5 taps rapides
+
+function adminTapDetect() {
+  _tapCount++;
+  // Feedback visuel subtil à chaque tap (imperceptible pour un client)
+  const logo = document.getElementById('logo-tap');
+  logo.style.opacity = '0.7';
+  setTimeout(() => logo.style.opacity = '1', 80);
+
+  if (_tapTimer) clearTimeout(_tapTimer);
+
+  if (_tapCount >= _TAP_REQUIRED) {
+    _tapCount = 0;
+    clearTimeout(_tapTimer);
+    openAdmin();
+    return;
+  }
+
+  // Reset si plus de 1,5s sans tap
+  _tapTimer = setTimeout(() => { _tapCount = 0; }, 1500);
+}
+
+function openAdmin() {
+  document.getElementById('admin-overlay').style.display = 'block';
+  document.getElementById('admin-login').style.display = 'block';
+  document.getElementById('admin-dashboard').style.display = 'none';
+  document.getElementById('admin-pass-input').value = '';
+  adminLoggedIn = false;
+  // Focus automatique sur le champ mot de passe
+  setTimeout(() => document.getElementById('admin-pass-input')?.focus(), 200);
+}
+
+function closeAdmin() {
+  document.getElementById('admin-overlay').style.display = 'none';
+}
+
+function adminLogin() {
+  const input = document.getElementById('admin-pass-input').value;
+  const c = loadConfig();
+  if (input === c.admin_pass) {
+    adminLoggedIn = true;
+    document.getElementById('admin-login').style.display = 'none';
+    document.getElementById('admin-dashboard').style.display = 'block';
+    adminLoadFields();
+    adminLoadStats();
+  } else {
+    document.getElementById('admin-pass-input').style.border = '2px solid #dc2626';
+    showToast('❌ Mot de passe incorrect');
+    setTimeout(() => {
+      document.getElementById('admin-pass-input').style.border = '1.5px solid #e2e8f0';
+    }, 1500);
+  }
+}
+
+function adminLoadFields() {
+  const c = loadConfig();
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  const chk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+  set('adm-prix-promesse',   c.prix_promesse);
+  set('adm-prix-contrat',    c.prix_contrat);
+  chk('adm-promo-active',    c.promo_active);
+  set('adm-promo-label',     c.promo_label);
+  set('adm-promo-promesse',  c.promo_prix_promesse);
+  set('adm-promo-contrat',   c.promo_prix_contrat);
+  set('adm-promo-fin',       c.promo_fin);
+  set('adm-app-nom',         c.app_nom);
+  set('adm-app-tagline',     c.app_tagline);
+  chk('adm-welcome-actif',   c.welcome_actif !== false);
+}
+
+function adminLoadStats() {
+  const promesses = JSON.parse(localStorage.getItem('spp_promises') || '[]');
+  const contrats  = JSON.parse(localStorage.getItem('spp_contracts') || '[]');
+  const simuls    = JSON.parse(localStorage.getItem('spp_history') || '[]');
+  const c = loadConfig();
+  
+  // Calcul CA estimé
+  const caPromesses = promesses.length * parseFloat((c.prix_promesse || '7.99').replace(',', '.'));
+  const caContrats  = contrats.length  * parseFloat((c.prix_contrat  || '19.99').replace(',', '.'));
+  
+  document.getElementById('adm-stats').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div style="background:#f8fafc;border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:1.6rem;font-weight:900;color:#2563eb">${promesses.length}</div>
+        <div style="font-size:0.68rem;color:#64748b">Promesses générées</div>
+        <div style="font-size:0.7rem;font-weight:700;color:#16a34a;margin-top:2px">${caPromesses.toFixed(2)} € CA est.</div>
+      </div>
+      <div style="background:#f8fafc;border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:1.6rem;font-weight:900;color:#7c3aed">${contrats.length}</div>
+        <div style="font-size:0.68rem;color:#64748b">Contrats générés</div>
+        <div style="font-size:0.7rem;font-weight:700;color:#16a34a;margin-top:2px">${caContrats.toFixed(2)} € CA est.</div>
+      </div>
+    </div>
+    <div style="background:#f0fdf4;border-radius:8px;padding:10px;text-align:center">
+      <div style="font-size:0.72rem;color:#166534;font-weight:700">💶 CA total estimé : ${(caPromesses + caContrats).toFixed(2)} €</div>
+      <div style="font-size:0.65rem;color:#4ade80;margin-top:2px">${simuls.length} simulation(s) sauvegardée(s)</div>
+    </div>
+  `;
+}
+
+function adminSave() {
+  const g = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  const c_chk = id => { const el = document.getElementById(id); return el ? el.checked : false; };
+  
+  const c = loadConfig();
+  const newPass = g('adm-new-pass');
+  
+  const newConfig = {
+    prix_promesse:       g('adm-prix-promesse')  || c.prix_promesse,
+    prix_contrat:        g('adm-prix-contrat')   || c.prix_contrat,
+    promo_active:        c_chk('adm-promo-active'),
+    promo_label:         g('adm-promo-label'),
+    promo_prix_promesse: g('adm-promo-promesse'),
+    promo_prix_contrat:  g('adm-promo-contrat'),
+    promo_fin:           g('adm-promo-fin'),
+    app_nom:             g('adm-app-nom')        || c.app_nom,
+    app_tagline:         g('adm-app-tagline')    || c.app_tagline,
+    welcome_actif:       c_chk('adm-welcome-actif'),
+    admin_pass:          newPass || c.admin_pass,
+  };
+  
+  saveConfig(newConfig);
+  applyConfig();
+  
+  // Mettre à jour les prix dans les paywalls de la session
+  updatePaywallPrices();
+  
+  closeAdmin();
+  showToast('✅ Configuration enregistrée !');
+}
+
+function adminReset() {
+  if (!confirm('Réinitialiser toute la configuration aux valeurs par défaut ?')) return;
+  localStorage.removeItem(ADMIN_KEY);
+  applyConfig();
+  closeAdmin();
+  showToast('🔄 Configuration réinitialisée');
+}
+
+// Mettre à jour les prix dans les fonctions de paywall dynamiquement
+function updatePaywallPrices() {
+  // Les paywalls sont générés à la volée, applyConfig() suffit pour les éléments DOM statiques
+  // Les prix dans les modals paywall seront corrects car ils appellent prixPromesse()/prixContrat() à chaque fois
+}
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+function showPage(id, tabEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  tabEl.classList.add('active');
+  if (id === 'contrats') {
+    injectWizCSS();
+    const c = document.getElementById('wiz-container');
+    if (c && !c.innerHTML.trim()) wizInitWithProfile();
+  }
+  if (id === 'promesse') {
+    injectWizCSS();
+    const p = document.getElementById('prom-container');
+    if (p && !p.innerHTML.trim()) promInitWithProfile();
+  }
+}
+
+// ═══════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+window.onload = () => {
+  applyConfig();
+  addEmployee();
+  runComparison();
+  renderHistory();
+  renderContracts();
+  renderPromesses();
+  injectWizCSS();
+  // Masquer l'écran d'accueil si désactivé dans l'admin
+  const c = loadConfig();
+  if (c.welcome_actif === false) {
+    welcomeClose();
+  }
+};
+</script>
+
+<!-- ════════════════ PANNEAU ADMIN ════════════════ -->
+<div id="admin-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.92);z-index:20000;overflow-y:auto;padding:20px;font-family:'DM Sans',sans-serif">
+  <div style="max-width:420px;margin:0 auto">
+    
+    <!-- Login -->
+    <div id="admin-login" style="background:white;border-radius:16px;padding:24px;margin-top:40px">
+      <div style="text-align:center;font-size:1.8rem;margin-bottom:8px">⚙️</div>
+      <div style="font-size:1rem;font-weight:800;color:#0f172a;text-align:center;margin-bottom:4px">Panneau d'administration</div>
+      <div style="font-size:0.72rem;color:#64748b;text-align:center;margin-bottom:20px">Réservé à l'administrateur de l'application</div>
+      <input type="password" id="admin-pass-input" placeholder="Mot de passe" onkeydown="if(event.key==='Enter')adminLogin()" style="width:100%;padding:12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:0.85rem;box-sizing:border-box;font-family:'DM Sans',sans-serif;margin-bottom:10px">
+      <button onclick="adminLogin()" style="width:100%;padding:12px;background:#0f172a;color:white;border:none;border-radius:8px;font-weight:800;font-size:0.85rem;cursor:pointer;font-family:'DM Sans',sans-serif">🔓 Accéder</button>
+      <button onclick="closeAdmin()" style="width:100%;padding:10px;background:transparent;color:#64748b;border:none;font-size:0.75rem;cursor:pointer;margin-top:6px;font-family:'DM Sans',sans-serif">Annuler</button>
+    </div>
+
+    <!-- Dashboard admin (caché jusqu'à login) -->
+    <div id="admin-dashboard" style="display:none">
+      
+      <!-- En-tête -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="color:white;font-weight:900;font-size:1rem">⚙️ Administration</div>
+        <button onclick="closeAdmin()" style="background:rgba(255,255,255,0.1);color:white;border:none;border-radius:8px;padding:6px 12px;font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif">✕ Fermer</button>
+      </div>
+
+      <!-- Section PRIX -->
+      <div style="background:white;border-radius:14px;padding:18px;margin-bottom:12px">
+        <div style="font-weight:900;color:#0f172a;font-size:0.88rem;margin-bottom:14px">💰 Prix des services</div>
+        
+        <div style="margin-bottom:12px">
+          <label style="font-size:0.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px">Promesse d'embauche (€)</label>
+          <input type="text" id="adm-prix-promesse" placeholder="7,99" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:0.88rem;box-sizing:border-box;font-family:'DM Sans',sans-serif">
+        </div>
+        <div>
+          <label style="font-size:0.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px">Contrat CDI / CDD (€)</label>
+          <input type="text" id="adm-prix-contrat" placeholder="19,99" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:0.88rem;box-sizing:border-box;font-family:'DM Sans',sans-serif">
+        </div>
+      </div>
+
+      <!-- Section PROMO -->
+      <div style="background:white;border-radius:14px;padding:18px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div style="font-weight:900;color:#0f172a;font-size:0.88rem">🎉 Promotion en cours</div>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.75rem;color:#64748b">
+            <input type="checkbox" id="adm-promo-active" style="width:16px;height:16px"> Activer
+          </label>
+        </div>
+        <div id="adm-promo-fields">
+          <div style="margin-bottom:10px">
+            <label style="font-size:0.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px">Message de la promo (bannière)</label>
+            <input type="text" id="adm-promo-label" placeholder="🎉 -30% ce week-end !" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:0.82rem;box-sizing:border-box;font-family:'DM Sans',sans-serif">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <div>
+              <label style="font-size:0.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px">Prix promo promesse (€)</label>
+              <input type="text" id="adm-promo-promesse" placeholder="5,99" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:0.82rem;box-sizing:border-box;font-family:'DM Sans',sans-serif">
+            </div>
+            <div>
+              <label style="font-size:0.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px">Prix promo contrat (€)</label>
+              <input type="text" id="adm-promo-contrat" placeholder="13,99" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:0.82rem;box-sizing:border-box;font-family:'DM Sans',sans-serif">
+            </div>
+          </div>
+          <div>
+            <label style="font-size:0.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px">Date de fin de promo (compte à rebours)</label>
+            <input type="date" id="adm-promo-fin" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:0.82rem;box-sizing:border-box;font-family:'DM Sans',sans-serif">
+          </div>
+        </div>
+      </div>
+
+      <!-- Section APPLI -->
+      <div style="background:white;border-radius:14px;padding:18px;margin-bottom:12px">
+        <div style="font-weight:900;color:#0f172a;font-size:0.88rem;margin-bottom:14px">🎨 Personnalisation</div>
+        <div style="margin-bottom:10px">
+          <label style="font-size:0.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px">Nom de l'application</label>
+          <input type="text" id="adm-app-nom" placeholder="CoûtSalarié Pro" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:0.82rem;box-sizing:border-box;font-family:'DM Sans',sans-serif">
+        </div>
+        <div style="margin-bottom:10px">
+          <label style="font-size:0.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px">Tagline (écran d'accueil)</label>
+          <input type="text" id="adm-app-tagline" placeholder="Votre assistant RH..." style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:0.82rem;box-sizing:border-box;font-family:'DM Sans',sans-serif">
+        </div>
+        <div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8rem;color:#334155;cursor:pointer">
+            <input type="checkbox" id="adm-welcome-actif" style="width:16px;height:16px">
+            Afficher l'écran d'accueil au lancement
+          </label>
+        </div>
+      </div>
+
+      <!-- Section MOT DE PASSE -->
+      <div style="background:white;border-radius:14px;padding:18px;margin-bottom:12px">
+        <div style="font-weight:900;color:#0f172a;font-size:0.88rem;margin-bottom:14px">🔒 Sécurité</div>
+        <div>
+          <label style="font-size:0.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px">Nouveau mot de passe admin</label>
+          <input type="password" id="adm-new-pass" placeholder="Laisser vide pour ne pas changer" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:0.82rem;box-sizing:border-box;font-family:'DM Sans',sans-serif">
+        </div>
+      </div>
+
+      <!-- STATISTIQUES -->
+      <div style="background:white;border-radius:14px;padding:18px;margin-bottom:12px">
+        <div style="font-weight:900;color:#0f172a;font-size:0.88rem;margin-bottom:14px">📊 Statistiques</div>
+        <div id="adm-stats" style="font-size:0.8rem;color:#334155;line-height:2"></div>
+      </div>
+
+      <!-- Boutons -->
+      <button onclick="adminSave()" style="width:100%;padding:14px;background:linear-gradient(135deg,#16a34a,#15803d);color:white;border:none;border-radius:10px;font-weight:900;font-size:0.92rem;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 4px 16px rgba(22,163,74,0.35);margin-bottom:8px">
+        💾 Enregistrer les modifications
+      </button>
+      <button onclick="adminReset()" style="width:100%;padding:10px;background:#fef2f2;color:#dc2626;border:1.5px solid #fecaca;border-radius:10px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
+        🗑 Réinitialiser toute la configuration
+      </button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
