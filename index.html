@@ -842,7 +842,7 @@ input:focus, select:focus { border-color: var(--blue-500); background: var(--whi
   <div class="logo" id="logo-tap" onclick="adminTapDetect()" style="cursor:default;user-select:none">
     <div class="logo-icon" style="display:flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="34" height="34" style="flex-shrink:0;margin-right:2px"><defs><linearGradient id="cslg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#60a5fa"/><stop offset="100%" style="stop-color:#3b82f6"/></linearGradient></defs><rect width="36" height="36" rx="9" fill="rgba(255,255,255,0.12)"/><circle cx="18" cy="12" r="5" fill="white" opacity="0.95"/><path d="M9 28 Q9 20 18 20 Q27 20 27 28" fill="white" opacity="0.95"/><circle cx="27.5" cy="26.5" r="6.5" fill="#f59e0b"/><text x="27.5" y="30.5" text-anchor="middle" font-size="8.5" font-weight="900" fill="white" font-family="Arial,sans-serif">€</text></svg></div>
     <span class="logo-text">CoûtSalarié</span>
-    <span class="logo-badge">PRO</span><span style="font-size:0.5rem;color:rgba(255,255,255,0.3);margin-left:6px">v4.0</span>
+    <span class="logo-badge">PRO</span><span style="font-size:0.5rem;color:rgba(255,255,255,0.3);margin-left:6px">v4.1</span>
   </div>
   <div style="display:flex;gap:8px;align-items:center">
     <button id="pwa-install-btn" onclick="installPWA()" style="display:none;align-items:center;gap:5px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:8px;color:white;font-size:0.72rem;font-weight:800;padding:7px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">
@@ -3716,7 +3716,30 @@ window.onload = () => {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/coutsalarie/sw.js')
-      .then(reg => console.log('[PWA] Service Worker enregistré:', reg.scope))
+      .then(reg => {
+        console.log('[PWA] Service Worker enregistré:', reg.scope);
+        
+        // Détecter une nouvelle version disponible
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          console.log('[PWA] Nouvelle version détectée !');
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // Nouveau SW installé, forcer la prise de contrôle
+              newWorker.postMessage('SKIP_WAITING');
+            }
+          });
+        });
+        
+        // Recharger la page quand le nouveau SW prend le contrôle
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          console.log('[PWA] Nouveau SW actif → rechargement...');
+          window.location.reload();
+        });
+        
+        // Vérifier les mises à jour toutes les 60 secondes
+        setInterval(() => reg.update(), 60000);
+      })
       .catch(err => console.log('[PWA] SW erreur:', err));
   });
 }
