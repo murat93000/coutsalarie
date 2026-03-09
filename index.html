@@ -3349,10 +3349,12 @@ function upsellGo(page) {
 
 // ── ONBOARDING TOOLTIP ──
 function showOnboarding() {
+  const APP_VERSION = '4.1';
   const profile = JSON.parse(localStorage.getItem('spp_profile') || '{}');
   const hasProfile = profile.emp_denomination && profile.emp_denomination.trim().length > 0;
-  const dismissed = localStorage.getItem('spp_onboarding_dismissed');
-  if (hasProfile || dismissed) return;
+  // Lié à la version : si version change → tuto réapparaît
+  const dismissedVersion = localStorage.getItem('spp_onboarding_dismissed');
+  if (hasProfile || dismissedVersion === APP_VERSION) return;
   setTimeout(() => {
     const tt = document.getElementById('onboarding-tooltip');
     const ar = document.getElementById('onboarding-arrow');
@@ -3362,11 +3364,12 @@ function showOnboarding() {
   }, 900);
 }
 function closeOnboarding() {
+  const APP_VERSION = '4.1';
   const tt = document.getElementById('onboarding-tooltip');
   const ar = document.getElementById('onboarding-arrow');
   if (tt) { tt.style.opacity='0'; tt.style.transform='scale(0.9)'; tt.style.transition='all 0.25s'; setTimeout(()=>{ if(tt) tt.style.display='none'; }, 250); }
   if (ar) ar.style.display = 'none';
-  localStorage.setItem('spp_onboarding_dismissed', '1');
+  localStorage.setItem('spp_onboarding_dismissed', APP_VERSION);
 }
 
 function applyConfig() {
@@ -3604,6 +3607,10 @@ function showToast(msg) {
 // INIT
 // ═══════════════════════════════════════════
 window.onload = () => {
+  // Nettoyer l'ancienne clé de dismiss (format '1') → force réaffichage une fois
+  if (localStorage.getItem('spp_onboarding_dismissed') === '1') {
+    localStorage.removeItem('spp_onboarding_dismissed');
+  }
   applyConfig();
   showOnboarding();
   addEmployee();
