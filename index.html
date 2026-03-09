@@ -852,6 +852,26 @@ input:focus, select:focus { border-color: var(--blue-500); background: var(--whi
   </div>
 </header>
 
+<!-- ════ ONBOARDING TOOLTIP ════ -->
+<div id="onboarding-arrow" style="display:none;position:fixed;top:48px;right:28px;z-index:9998;font-size:1.4rem;pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4));animation:tooltip-pulse-arrow 1s ease-in-out infinite">👆</div>
+<div id="onboarding-tooltip" style="display:none" onclick="event.stopPropagation()">
+  <span class="ot-close" onclick="closeOnboarding()">✕</span>
+  <div class="ot-title">🚀 Par où commencer ?</div>
+  <div class="ot-step">
+    <div class="ot-num">1</div>
+    <div class="ot-txt"><strong>Ajoutez votre profil</strong> — nom entreprise, SIRET, convention collective</div>
+  </div>
+  <div class="ot-step">
+    <div class="ot-num">2</div>
+    <div class="ot-txt"><strong>Simulez vos cotisations</strong> — entrez le salaire net ou brut souhaité</div>
+  </div>
+  <div class="ot-step">
+    <div class="ot-num">3</div>
+    <div class="ot-txt"><strong>Générez vos documents</strong> RH officiels en 2 minutes ✉️ 📝</div>
+  </div>
+  <button class="ot-cta" onclick="closeOnboarding(); openProfileModal()">🏢 Remplir mon profil maintenant</button>
+</div>
+
 <div class="tabs">
   <div class="tab active" onclick="showPage('simulation', this)">📊 Simulation</div>
   <div class="tab" onclick="showPage('comparateur', this)">⚖️ Comparateur</div>
