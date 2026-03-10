@@ -960,7 +960,7 @@ input:focus, select:focus { border-color: var(--blue-500); background: var(--whi
   <div class="logo" id="logo-tap" onclick="adminTapDetect()" style="cursor:default;user-select:none">
     <div class="logo-icon" style="display:flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="34" height="34" style="flex-shrink:0;margin-right:2px"><defs><linearGradient id="cslg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#60a5fa"/><stop offset="100%" style="stop-color:#3b82f6"/></linearGradient></defs><rect width="36" height="36" rx="9" fill="rgba(255,255,255,0.12)"/><circle cx="18" cy="12" r="5" fill="white" opacity="0.95"/><path d="M9 28 Q9 20 18 20 Q27 20 27 28" fill="white" opacity="0.95"/><circle cx="27.5" cy="26.5" r="6.5" fill="#f59e0b"/><text x="27.5" y="30.5" text-anchor="middle" font-size="8.5" font-weight="900" fill="white" font-family="Arial,sans-serif">€</text></svg></div>
     <span class="logo-text">CoûtSalarié</span>
-    <span class="logo-badge">PRO</span><span style="font-size:0.5rem;color:rgba(255,255,255,0.3);margin-left:6px">v4.5</span>
+    <span class="logo-badge">PRO</span><span style="font-size:0.5rem;color:rgba(255,255,255,0.3);margin-left:6px">v4.6</span>
   </div>
   <div style="display:flex;gap:8px;align-items:center">
     <button id="pwa-install-btn" onclick="installPWA()" style="display:none;align-items:center;gap:5px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:8px;color:white;font-size:0.72rem;font-weight:800;padding:7px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">
@@ -1228,6 +1228,27 @@ input:focus, select:focus { border-color: var(--blue-500); background: var(--whi
 
       <div style="font-size:0.62rem;color:#94a3b8;text-align:center;margin-top:10px">
         🔒 Vos données ne sont utilisées que pour traiter votre demande
+      </div>
+    </div>
+
+    <!-- Mentions légales & CGV -->
+    <div style="background:white;border-radius:14px;padding:16px;margin-top:14px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+      <div style="font-size:0.85rem;font-weight:800;color:#0f172a;margin-bottom:12px">📋 Informations légales</div>
+      <div style="font-size:0.75rem;color:#475569;line-height:1.6;margin-bottom:10px">
+        <strong>Éditeur :</strong> TALIA OPTIQUE (OPTICAL BLINK)<br>
+        <strong>SIRET :</strong> 84125343800029<br>
+        <strong>Adresse :</strong> 5 PL DU 25 AOUT 1944, 75014 PARIS 14<br>
+        <strong>Contact :</strong> mkmurat3@gmail.com
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="openMentions('ml')"
+          style="flex:1;min-width:130px;padding:9px 12px;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:9px;font-size:0.75rem;font-weight:700;color:#1e3a5f;cursor:pointer;font-family:'DM Sans',sans-serif">
+          📄 Mentions légales
+        </button>
+        <button onclick="openMentions('cgv')"
+          style="flex:1;min-width:130px;padding:9px 12px;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:9px;font-size:0.75rem;font-weight:700;color:#1e3a5f;cursor:pointer;font-family:'DM Sans',sans-serif">
+          🛒 CGV
+        </button>
       </div>
     </div>
 
@@ -4324,6 +4345,48 @@ function showDocumentReadyBanner(type) {
 }
 
 // ── FAQ toggle ──
+function openMentions(type) {
+  const isMl = type === 'ml';
+  const html = isMl ? `
+    <h2 style="color:#1e3a5f;margin-top:0">Mentions Légales</h2>
+    <h3>Éditeur</h3>
+    <p>TALIA OPTIQUE (OPTICAL BLINK)<br>SIRET : 84125343800029<br>5 PL DU 25 AOUT 1944, 75014 PARIS 14<br>Email : mkmurat3@gmail.com</p>
+    <h3>Hébergement</h3>
+    <p>GitHub Pages — GitHub Inc., 88 Colin P Kelly Jr Street, San Francisco, CA 94107, États-Unis</p>
+    <h3>Propriété intellectuelle</h3>
+    <p>L'ensemble du contenu de ce site est la propriété exclusive de TALIA OPTIQUE. Toute reproduction est interdite sans autorisation écrite préalable.</p>
+    <h3>Données personnelles (RGPD)</h3>
+    <p>Les données saisies sont stockées localement dans votre navigateur (localStorage) et ne sont pas transmises à des tiers, sauf pour le traitement du paiement par Stripe. Vous disposez d'un droit d'accès, rectification et suppression : mkmurat3@gmail.com</p>
+    <h3>Cookies</h3>
+    <p>Ce site utilise uniquement des cookies techniques (localStorage). Aucun cookie publicitaire ou de tracking n'est utilisé.</p>
+  ` : `
+    <h2 style="color:#1e3a5f;margin-top:0">Conditions Générales de Vente</h2>
+    <h3>Article 1 — Produits et prix</h3>
+    <ul><li>Promesse d'embauche : <strong>7,99 € TTC</strong></li><li>Contrat de travail CDI/CDD : <strong>19,99 € TTC</strong></li></ul>
+    <h3>Article 2 — Paiement</h3>
+    <p>Paiement sécurisé par carte bancaire via Stripe (PCI-DSS). Aucune donnée bancaire n'est stockée par TALIA OPTIQUE.</p>
+    <h3>Article 3 — Livraison</h3>
+    <p>Documents numériques générés instantanément après paiement. Conformément à l'article L221-28 du Code de la consommation, le droit de rétractation ne s'applique pas aux contenus numériques déjà exécutés.</p>
+    <h3>Article 4 — Modification</h3>
+    <p>1 modification gratuite par document dans les 24h suivant la génération. Au-delà, un nouvel achat est nécessaire.</p>
+    <h3>Article 5 — Remboursement</h3>
+    <p>Remboursement intégral possible sous 7 jours si le document ne correspond pas à votre besoin. Contactez-nous via l'onglet Support.</p>
+    <h3>Article 6 — Responsabilité</h3>
+    <p>Les documents sont conformes au Code du travail français en vigueur. Il est recommandé de les faire valider par un professionnel du droit pour toute situation complexe.</p>
+    <h3>Article 7 — Droit applicable</h3>
+    <p>CGV soumises au droit français. En cas de litige non résolu, vous pouvez recourir à la médiation : <a href="https://ec.europa.eu/consumers/odr" target="_blank">plateforme ODR européenne</a>.</p>
+    <p style="color:#94a3b8;font-size:0.75rem;margin-top:20px">TALIA OPTIQUE (OPTICAL BLINK) — SIRET : 84125343800029</p>
+  `;
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,0.85);display:flex;align-items:center;justify-content:center;padding:16px';
+  overlay.innerHTML = `
+    <div style="background:white;border-radius:16px;max-width:600px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;position:relative;font-family:'DM Sans',sans-serif;font-size:0.82rem;line-height:1.6;color:#334155">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="position:absolute;top:12px;right:12px;background:#f1f5f9;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:700;color:#64748b">✕ Fermer</button>
+      ${html}
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
 function toggleFaq(el) {
   el.classList.toggle('open');
 }
