@@ -3297,8 +3297,12 @@ function promBuildRecap() {
 }
 
 function promPay() {
+  // Collecter les champs de l'étape actuelle avant de partir
+  promCollectStep();
   // Sauvegarder les données de la promesse dans localStorage pour récupération après paiement
-  localStorage.setItem('spp_pending_promesse', JSON.stringify(PROM?.data || {}));
+  const promDataToSave = { ...PROM.data };
+  console.log('[promPay] Données sauvegardées:', JSON.stringify(promDataToSave).slice(0, 200));
+  localStorage.setItem('spp_pending_promesse', JSON.stringify(promDataToSave));
   localStorage.setItem('spp_pending_type', 'promesse');
   localStorage.setItem('spp_pending_time', Date.now().toString());
   // Redirection vers Stripe Payment Link
@@ -3889,25 +3893,39 @@ function loadDraft(id) {
     showPage('contrats', document.querySelector('.tab[onclick*="contrats"]'));
     setTimeout(() => {
       WIZ.data = { ...draft.data };
-      WIZ.step = draft.step || 0;
       WIZ.paid = false;
       startWiz();
-      // Aller à la bonne étape
-      if (draft.step > 0) {
-        WIZ.step = draft.step;
+      // Si brouillon complet (a un type CDI/CDD), aller à l'étape recap
+      const steps = getSteps(draft.data.type || '');
+      const hasAllData = draft.data.sal_nom && draft.data.sal_prenom && draft.data.poste_fonction;
+      if (hasAllData && steps.length > 0) {
+        WIZ.step = steps.length - 1; // étape recap
         wizRender();
+        showToast('📝 Brouillon complet chargé — vérifiez et payez !');
+      } else {
+        WIZ.step = draft.step || 0;
+        wizRender();
+        showToast('📝 Brouillon chargé — étape ' + (WIZ.step + 1));
       }
-      showToast('📝 Brouillon chargé — étape ' + (draft.step + 1));
     }, 300);
   } else if (draft.type === 'promesse') {
     showPage('promesse', document.querySelector('.tab[onclick*="promesse"]'));
     setTimeout(() => {
       PROM.data = { ...draft.data };
-      PROM.step = draft.step || 0;
       PROM.paid = false;
       startWizProm();
-      if (draft.step > 0) { PROM.step = draft.step; promRender(); }
-      showToast('📝 Brouillon chargé — étape ' + (draft.step + 1));
+      // Si brouillon complet, aller à l'étape recap
+      const promSteps = promGetSteps();
+      const promHasAllData = draft.data.sal_nom && draft.data.sal_prenom;
+      if (promHasAllData && promSteps.length > 0) {
+        PROM.step = promSteps.length - 1;
+        promRender();
+        showToast('📝 Brouillon complet chargé — vérifiez et payez !');
+      } else {
+        PROM.step = draft.step || 0;
+        promRender();
+        showToast('📝 Brouillon chargé — étape ' + (PROM.step + 1));
+      }
     }, 300);
   }
 }
