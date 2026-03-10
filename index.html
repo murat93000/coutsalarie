@@ -1366,6 +1366,8 @@ const CONFIG_DEFAULT = {
   app_nom:         'CoûtSalarié Pro',
   app_tagline:     'Simulation charges · Contrats CDI/CDD · Documents officiels',
   welcome_actif:   true,          // afficher l'écran d'accueil
+  // Modification documents
+  delai_modif_heures: 24,          // délai en heures avant de pouvoir modifier (0 = immédiat)
   // Mot de passe admin
   admin_pass:      'simupro2025',
 };
@@ -1848,10 +1850,7 @@ function generatePDF() {
   <div class="draft-autosave" id="draft-autosave">💾 Brouillon sauvegardé</div>
 </body></html>`;
 
-  const w = window.open('', '_blank');
-  w.document.write(html);
-  w.document.close();
-  setTimeout(() => w.print(), 500);
+  openDocViewer(html, "Promesse d'embauche");
   showToast('📄 Document généré !');
 }
 
@@ -2129,6 +2128,7 @@ function wizInitWithProfile() {
   WIZ.step = 0;
   WIZ.data = {};
   WIZ.paid = false;
+  WIZ.modifMode = false;
   WIZ.contractGenerated = false;
   // Pré-remplir depuis le profil
   const p = loadProfile();
@@ -2179,6 +2179,7 @@ function wizModify() {
 function wizInit() { wizInitWithProfile(); }
 
 function wizRender() {
+  console.log('[wizRender] step=' + WIZ.step + ' modifMode=' + WIZ.modifMode + ' paid=' + WIZ.paid);
   const type = WIZ.data.type || null;
   const steps = getSteps(type || '');
   const step = steps[WIZ.step] || steps[steps.length - 1];
@@ -2221,7 +2222,17 @@ function wizRender() {
     </div>`;
   } else {
     // Recap — paywall or generate
-    if (!WIZ.paid) {
+    if (WIZ.modifMode) {
+      // MODE MODIFICATION : génération gratuite, pas de nouveau contrat possible
+      html += `
+      <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:10px;padding:14px;margin:8px 0;text-align:center">
+        <div style="font-size:1.4rem;margin-bottom:4px">✏️</div>
+        <div style="font-weight:800;color:#92400e;margin-bottom:4px">Mode Modification</div>
+        <div style="font-size:0.78rem;color:#92400e;opacity:0.8">Régénération gratuite · Une seule fois · Code usage unique</div>
+      </div>
+      <button class="btn btn-success" style="width:100%;margin-bottom:8px" onclick="wizGenerateModif()">📄 Régénérer le contrat</button>
+      <button class="btn btn-secondary" style="width:100%;font-size:0.8rem" onclick="wizBack()">← Modifier les informations</button>`;
+    } else if (!WIZ.paid) {
       html += `
       <div class="paywall" style="margin-top:0">
         <span class="paywall-icon">🔒</span>
@@ -2619,6 +2630,56 @@ function wizConfirmPay(btn) {
   }, 1800);
 }
 
+// ─── ALIASES POUR checkStripeReturn ───
+
+// Génération en mode modification (sans nouveau paiement, usage unique)
+function wizGenerateModif() {
+  if (!WIZ || !WIZ.data) { showToast('Données manquantes'); return; }
+  wizCollectStep(); // Récupérer les éventuels changements
+  wizGenerate();
+  // Mettre à jour l'entrée existante dans l'historique (ne pas en créer une nouvelle)
+  const d = WIZ.data;
+  const contracts = JSON.parse(localStorage.getItem('spp_contracts') || '[]');
+  const key = (d.sal_prenom || '') + ' ' + (d.sal_nom || '');
+  const idx = contracts.findIndex(c => c.salarie.trim() === key.trim());
+  if (idx >= 0) {
+    contracts[idx].data = d;
+    contracts[idx].date = new Date().toLocaleDateString('fr-FR');
+    contracts[idx].time = new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+    localStorage.setItem('spp_contracts', JSON.stringify(contracts));
+  }
+  // saveContractToHistory (appelé par wizGenerate) gère modifCount + update entrée existante
+  showToast('✅ Contrat régénéré et mis à jour !');
+}
+
+function promGenerateModif() {
+  if (!PROM || !PROM.data) { showToast('Données manquantes'); return; }
+  promCollectStep();
+  promGenerate();
+  const d = PROM.data;
+  const promises = JSON.parse(localStorage.getItem('spp_promises') || '[]');
+  const key = (d.sal_prenom || '') + ' ' + (d.sal_nom || '');
+  const idx = promises.findIndex(p => p.salarie.trim() === key.trim());
+  if (idx >= 0) {
+    promises[idx].data = d;
+    promises[idx].date = new Date().toLocaleDateString('fr-FR');
+    promises[idx].time = new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+    localStorage.setItem('spp_promises', JSON.stringify(promises));
+  }
+  // savePromesseToHistory (appelé par promGenerate) gère modifCount + update entrée existante
+  showToast('✅ Promesse régénérée et mise à jour !');
+}
+
+function generateContract() {
+  if (!WIZ || !WIZ.data) { showToast('Données du contrat manquantes'); return; }
+  wizGenerate(); // wizGenerate appelle saveContractToHistory qui sauvegarde html + data
+}
+
+function generatePromesse() {
+  if (!PROM || !PROM.data) { showToast('Données de la promesse manquantes'); return; }
+  promGenerate(); // promGenerate appelle savePromesseToHistory qui sauvegarde html + data
+}
+
 // ─── GENERATION CONTRAT basée sur les modèles officiels ───
 function gw(id, fallback) {
   return WIZ.data[id] || fallback || '___________';
@@ -2883,10 +2944,7 @@ function wizGenerate() {
 
   </body></html>`;
 
-  const w = window.open('', '_blank');
-  w.document.write(html);
-  w.document.close();
-  setTimeout(() => w.print(), 700);
+  openDocViewer(html, 'Contrat ' + ((WIZ.data.type || 'CDI').toUpperCase()) + ' — ' + (WIZ.data.sal_prenom || '') + ' ' + (WIZ.data.sal_nom || ''));
   // ── Sauvegarder dans l'historique ──
   saveContractToHistory(html, WIZ.data);
   showToast('📄 Contrat généré et sauvegardé !');
@@ -2948,6 +3006,23 @@ function loadContracts() {
 
 function saveContractToHistory(html, data) {
   let contracts = loadContracts();
+  // Si mode modification : mettre à jour l'entrée existante (ne pas créer une nouvelle)
+  if (WIZ && WIZ._modifHistoryId) {
+    const i = contracts.findIndex(c => c.id === WIZ._modifHistoryId);
+    if (i >= 0) {
+      contracts[i].html = html;
+      contracts[i].data = data;
+      contracts[i].date = new Date().toLocaleDateString('fr-FR');
+      contracts[i].time = new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+      contracts[i].modifCount = (contracts[i].modifCount || 0) + 1;
+      localStorage.setItem(CONTRACTS_KEY, JSON.stringify(contracts));
+      WIZ._modifHistoryId = null;
+      WIZ.modifMode = false;
+      renderContracts();
+      return;
+    }
+  }
+  // Nouveau document : créer une entrée
   const entry = {
     id: Date.now(),
     date: new Date().toLocaleDateString('fr-FR'),
@@ -2956,7 +3031,10 @@ function saveContractToHistory(html, data) {
     salarie: (data.sal_prenom || '') + ' ' + (data.sal_nom || ''),
     societe: data.emp_denomination || '',
     poste: data.poste_fonction || '',
-    html: html   // le contrat complet sauvegardé
+    html: html,
+    data: data,
+    modifCount: 0,
+    createdAt: Date.now()
   };
   contracts.unshift(entry);
   if (contracts.length > 30) contracts = contracts.slice(0, 30);
@@ -2980,9 +3058,7 @@ function viewContract(id) {
   const contracts = loadContracts();
   const entry = contracts.find(c => c.id === id);
   if (!entry) { showToast('Contrat introuvable'); return; }
-  const w = window.open('', '_blank');
-  w.document.write(entry.html);
-  w.document.close();
+  openDocViewer(entry.html, 'Contrat — ' + (entry.salarie || ''));
 }
 
 function shareContractByMail(id) {
@@ -2995,6 +3071,89 @@ function shareContractByMail(id) {
     `Bonjour,\n\nVeuillez trouver ci-joint le contrat de travail ${typeLabel} établi pour ${entry.salarie} au poste de ${entry.poste}.\n\nCe contrat a été généré le ${entry.date} à ${entry.time} via CoûtSalarié Pro.\n\nNB : Pour envoyer le document en pièce jointe, ouvrez le contrat (bouton 👁 Consulter), imprimez-le en PDF depuis votre navigateur, puis joignez-le à cet email.\n\nCordialement,\n${entry.societe}`
   );
   window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+function editContractFromHistory(id) {
+  const contracts = JSON.parse(localStorage.getItem('spp_contracts') || '[]');
+  const idx = contracts.findIndex(x => x.id === id);
+  if (idx < 0) { showToast('Contrat introuvable'); return; }
+  const c = contracts[idx];
+  if (!c.data || Object.keys(c.data).length === 0) {
+    showToast('⚠️ Données non disponibles — contrat généré avec ancienne version.', 4000);
+    return;
+  }
+  // Vérifier quota + fenêtre de modification
+  const delaiH = parseInt(cfg('delai_modif_heures') ?? 24);
+  if ((c.modifCount || 0) >= 1) {
+    showToast('⚠️ Modification gratuite déjà utilisée. Pour modifier à nouveau, achetez un nouveau contrat.', 5000);
+    return;
+  }
+  if (delaiH > 0 && c.createdAt) {
+    const ageH = (Date.now() - c.createdAt) / (1000 * 3600);
+    if (ageH > delaiH) {
+      showToast('⏰ Délai de modification expiré (' + delaiH + 'h après génération). Créez un nouveau contrat.', 5000);
+      return;
+    }
+    // Afficher le temps restant
+    const restantMin = Math.ceil((delaiH - ageH) * 60);
+    const restantTxt = restantMin >= 60 ? Math.floor(restantMin/60) + 'h' + (restantMin%60 ? (restantMin%60) + 'min' : '') : restantMin + ' min';
+    showToast('✏️ Modification possible — il vous reste ' + restantTxt + '.', 3000);
+  }
+  showPage('contrats', document.querySelector('[onclick*="contrats"]'));
+  setTimeout(() => {
+    const savedData = { ...c.data };
+    startWiz();
+    WIZ.data = { ...savedData };
+    WIZ.paid = false;
+    WIZ.modifMode = true;
+    WIZ._modifHistoryId = id; // mémoriser pour incrémenter après
+    WIZ.contractGenerated = false;
+    const steps = getSteps(WIZ.data.type || 'cdi');
+    WIZ.step = steps.length - 1;
+    wizRender();
+    showToast('📝 Contrat chargé — 1 modification gratuite disponible.', 3000);
+  }, 300);
+}
+
+function editPromesseFromHistory(id) {
+  const promises = JSON.parse(localStorage.getItem('spp_promises') || '[]');
+  const idx = promises.findIndex(x => x.id === id);
+  if (idx < 0) { showToast('Promesse introuvable'); return; }
+  const p = promises[idx];
+  if (!p.data || Object.keys(p.data).length === 0) {
+    showToast('⚠️ Données non disponibles — promesse générée avec ancienne version.', 4000);
+    return;
+  }
+  // Vérifier quota + fenêtre de modification
+  const delaiH = parseInt(cfg('delai_modif_heures') ?? 24);
+  if ((p.modifCount || 0) >= 1) {
+    showToast('⚠️ Modification gratuite déjà utilisée. Pour modifier à nouveau, créez une nouvelle promesse.', 5000);
+    return;
+  }
+  if (delaiH > 0 && p.createdAt) {
+    const ageH = (Date.now() - p.createdAt) / (1000 * 3600);
+    if (ageH > delaiH) {
+      showToast('⏰ Délai de modification expiré (' + delaiH + 'h après génération). Créez une nouvelle promesse.', 5000);
+      return;
+    }
+    const restantMin = Math.ceil((delaiH - ageH) * 60);
+    const restantTxt = restantMin >= 60 ? Math.floor(restantMin/60) + 'h' + (restantMin%60 ? (restantMin%60) + 'min' : '') : restantMin + ' min';
+    showToast('✏️ Modification possible — il vous reste ' + restantTxt + '.', 3000);
+  }
+  showPage('promesse', document.querySelector('[onclick*="promesse"]'));
+  setTimeout(() => {
+    const savedData = { ...p.data };
+    startWizProm();
+    PROM.data = { ...savedData };
+    PROM.paid = false;
+    PROM.modifMode = true;
+    PROM._modifHistoryId = id; // mémoriser pour incrémenter après
+    PROM.generated = false;
+    const pSteps = promGetSteps();
+    PROM.step = pSteps.length - 1;
+    promRender();
+    showToast('📝 Promesse chargée — 1 modification gratuite disponible.', 3000);
+  }, 300);
 }
 
 function renderContracts() {
@@ -3027,6 +3186,11 @@ function renderContracts() {
       <div class="contract-hist-actions">
         <button class="btn-hist-view" onclick="viewContract(${c.id})">👁 Consulter</button>
         <button class="btn-hist-mail" onclick="shareContractByMail(${c.id})">✉️ Partager</button>
+        <button class="btn-hist-view"
+          style="${(()=>{ const dH=parseInt(loadConfig().delai_modif_heures??24); const used=(c.modifCount||0)>=1; const exp=dH>0&&c.createdAt&&((Date.now()-c.createdAt)/3600000)>dH; return (used||exp)?'background:#e2e8f0;color:#94a3b8;border-color:#cbd5e1;cursor:not-allowed':'background:#fef3c7;color:#92400e;border-color:#f59e0b'; })()}"
+          onclick="editContractFromHistory(${c.id})">
+          ${(()=>{ const dH=parseInt(loadConfig().delai_modif_heures??24); const used=(c.modifCount||0)>=1; const exp=dH>0&&c.createdAt&&((Date.now()-c.createdAt)/3600000)>dH; return used?'✏️ Modifié':exp?'⏰ Expiré':'✏️ Modifier'; })()}
+        </button>
         <button class="btn-hist-del" onclick="deleteContract(${c.id})">🗑</button>
       </div>
     </div>`;
@@ -3132,11 +3296,14 @@ function promInitWithProfile() {
   promRender();
 }
 
+function startWizProm() { promInitWithProfile(); }
+
 function promRender() {
   const container = document.getElementById('prom-container');
   if (!container) return;
   const steps = promGetSteps();
   const step = steps[PROM.step];
+  console.log('[promRender] step=' + PROM.step + ' modifMode=' + PROM.modifMode + ' paid=' + PROM.paid);
   const total = steps.length;
   const pct = Math.round((PROM.step / (total - 1)) * 100);
 
@@ -3153,7 +3320,17 @@ function promRender() {
   // ── Contenu selon étape ──
   if (step.id === 'recap') {
     html += promBuildRecap();
-    if (!PROM.paid) {
+    if (PROM.modifMode) {
+      // MODE MODIFICATION : génération gratuite, usage unique
+      html += `
+      <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:10px;padding:14px;margin:8px 0;text-align:center">
+        <div style="font-size:1.4rem;margin-bottom:4px">✏️</div>
+        <div style="font-weight:800;color:#92400e;margin-bottom:4px">Mode Modification</div>
+        <div style="font-size:0.78rem;color:#92400e;opacity:0.8">Régénération gratuite · Une seule fois · Code usage unique</div>
+      </div>
+      <button class="btn btn-success" style="width:100%;margin-bottom:8px" onclick="promGenerateModif()">📄 Régénérer la promesse</button>
+      <button class="btn btn-secondary" style="width:100%;font-size:0.8rem" onclick="promBack()">← Modifier les informations</button>`;
+    } else if (!PROM.paid) {
       html += `
       <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:10px;padding:14px;margin:14px 0;text-align:center">
         <div style="font-size:1.3rem;margin-bottom:4px">✉️</div>
@@ -3309,7 +3486,7 @@ function promPay() {
   localStorage.setItem('spp_pending_type', 'promesse');
   localStorage.setItem('spp_pending_time', Date.now().toString());
   // Redirection vers Stripe Payment Link
-  window.location.href = 'https://buy.stripe.com/test_aFaeVcaxof819Uw6uye7m00';
+  window.location.href = 'https://buy.stripe.com/aFadR8eIUcwjbCbgjvaEE01';
 }
 function promPay_OLD() {
   const modal = document.createElement('div');
@@ -3448,10 +3625,7 @@ function promGenerate() {
   Ce document est fourni à titre d'aide à la rédaction. Pour toute situation complexe, consultez un juriste spécialisé en droit du travail.</p>
   </body></html>`;
 
-  const w = window.open('', '_blank');
-  w.document.write(html);
-  w.document.close();
-  setTimeout(() => w.print(), 600);
+  openDocViewer(html, "Promesse d'embauche — " + (d.sal_prenom || '') + ' ' + (d.sal_nom || ''));
 
   // Sauvegarder dans l'historique
   savePromesseToHistory(html, d);
@@ -3464,6 +3638,7 @@ function promConvertToContract() {
   // Transférer les données vers le wizard contrat
   WIZ.step = 0;
   WIZ.paid = false;
+  WIZ.modifMode = false;
   WIZ.contractGenerated = false;
   WIZ.data = {
     // Entreprise
@@ -3520,6 +3695,23 @@ function loadPromesses() {
 
 function savePromesseToHistory(html, data) {
   let promises = loadPromesses();
+  // Si mode modification : mettre à jour l'entrée existante (ne pas créer une nouvelle)
+  if (PROM && PROM._modifHistoryId) {
+    const i = promises.findIndex(p => p.id === PROM._modifHistoryId);
+    if (i >= 0) {
+      promises[i].html = html;
+      promises[i].data = data;
+      promises[i].date = new Date().toLocaleDateString('fr-FR');
+      promises[i].time = new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+      promises[i].modifCount = (promises[i].modifCount || 0) + 1;
+      localStorage.setItem(PROMISES_KEY, JSON.stringify(promises));
+      PROM._modifHistoryId = null;
+      PROM.modifMode = false;
+      renderPromesses();
+      return;
+    }
+  }
+  // Nouveau document : créer une entrée
   const entry = {
     id: Date.now(),
     date: new Date().toLocaleDateString('fr-FR'),
@@ -3528,7 +3720,10 @@ function savePromesseToHistory(html, data) {
     societe:  data.emp_denomination || '',
     poste:    data.poste_fonction   || '',
     typeContrat: data.poste_type    || 'CDI',
-    html: html
+    html: html,
+    data: data,
+    modifCount: 0,
+    createdAt: Date.now()
   };
   promises.unshift(entry);
   if (promises.length > 30) promises = promises.slice(0, 30);
@@ -3545,9 +3740,7 @@ function deletePromesse(id) {
 function viewPromesse(id) {
   const p = loadPromesses().find(p => p.id === id);
   if (!p) return;
-  const w = window.open('', '_blank');
-  w.document.write(p.html);
-  w.document.close();
+  openDocViewer(p.html, "Promesse — " + (p.salarie || ''));
 }
 
 function sharePromesseByMail(id) {
@@ -3586,7 +3779,11 @@ function renderPromesses() {
       <div class="contract-hist-actions">
         <button class="btn-hist-view" onclick="viewPromesse(${p.id})">👁 Consulter</button>
         <button class="btn-hist-mail" onclick="sharePromesseByMail(${p.id})">✉️ Partager</button>
-        <button class="btn-hist-view" style="background:#fef3c7;color:#92400e;border-color:#f59e0b" onclick="openModifModal()">✏️ Modifier</button>
+        <button class="btn-hist-view"
+          style="${(()=>{ const dH=parseInt(loadConfig().delai_modif_heures??24); const used=(p.modifCount||0)>=1; const exp=dH>0&&p.createdAt&&((Date.now()-p.createdAt)/3600000)>dH; return (used||exp)?'background:#e2e8f0;color:#94a3b8;border-color:#cbd5e1;cursor:not-allowed':'background:#fef3c7;color:#92400e;border-color:#f59e0b'; })()}"
+          onclick="editPromesseFromHistory(${p.id})">
+          ${(()=>{ const dH=parseInt(loadConfig().delai_modif_heures??24); const used=(p.modifCount||0)>=1; const exp=dH>0&&p.createdAt&&((Date.now()-p.createdAt)/3600000)>dH; return used?'✏️ Modifié':exp?'⏰ Expiré':'✏️ Modifier'; })()}
+        </button>
         <button class="btn-hist-del" onclick="deletePromesse(${p.id})">🗑</button>
       </div>
     </div>`).join('');
@@ -3764,21 +3961,32 @@ function verifyModifCode() {
     showPage('contrats', document.querySelector('[onclick*="contrats"]'));
     setTimeout(() => {
       if (typeof WIZ !== 'undefined') {
-        WIZ.data = entry.data;
-        WIZ.paid = true; // déjà payé, pas besoin de repayer
+        const savedData = { ...entry.data };
+        startWiz();              // startWiz remet modifMode=false, donc on le remet après
+        WIZ.data = { ...savedData };
+        WIZ.paid = false;
+        WIZ.modifMode = true;    // Mode modification : génération gratuite UNIQUEMENT
         WIZ.contractGenerated = false;
-        startWiz(); // Retourner à l'étape 1 avec données pré-remplies
-        showToast('📝 Données chargées — modifiez puis régénérez le document.', 4000);
+        // Aller directement au recap pour montrer les données
+        const steps = getSteps(WIZ.data.type || 'cdi');
+        WIZ.step = steps.length - 1;
+        wizRender();
+        showToast('📝 Document chargé — modifiez et régénérez gratuitement !', 4000);
       }
     }, 400);
   } else if (entry.type === 'promesse') {
     showPage('promesse', document.querySelector('[onclick*="promesse"]'));
     setTimeout(() => {
-      PROM.data = entry.data;
-      PROM.paid = true;
+      const savedPromData = { ...entry.data };
+      startWizProm();           // startWizProm remet modifMode=false, donc on le remet après
+      PROM.data = { ...savedPromData };
+      PROM.paid = false;
+      PROM.modifMode = true;    // Mode modification
       PROM.generated = false;
-      startWizProm();
-      showToast('📝 Données chargées — modifiez puis régénérez la promesse.', 4000);
+      const pSteps = promGetSteps();
+      PROM.step = pSteps.length - 1;
+      promRender();
+      showToast('📝 Promesse chargée — modifiez et régénérez gratuitement !', 4000);
     }, 400);
   }
 }
@@ -4052,6 +4260,10 @@ function forceGenerateAfterPayment() {
     localStorage.removeItem('spp_pending_contrat');
     localStorage.removeItem('spp_pending_time');
     if (Object.keys(data).length > 0) {
+      // Supprimer le brouillon
+      const nom = ((data.sal_prenom || '') + ' ' + (data.sal_nom || '')).trim().toLowerCase();
+      const dr = loadDrafts().filter(d => !(d.type === 'contrat' && d.label.toLowerCase().includes(nom)));
+      saveDrafts(dr); updateDraftBadge();
       showToast('✅ Génération de votre contrat...');
       setTimeout(() => {
         showPage('contrats', document.querySelector('.tab[onclick*="contrats"]'));
@@ -4063,6 +4275,10 @@ function forceGenerateAfterPayment() {
     localStorage.removeItem('spp_pending_promesse');
     localStorage.removeItem('spp_pending_time');
     if (Object.keys(data).length > 0) {
+      // Supprimer le brouillon
+      const nom = ((data.sal_prenom || '') + ' ' + (data.sal_nom || '')).trim().toLowerCase();
+      const dr = loadDrafts().filter(d => !(d.type === 'promesse' && d.label.toLowerCase().includes(nom)));
+      saveDrafts(dr); updateDraftBadge();
       showToast('✅ Génération de votre promesse...');
       setTimeout(() => {
         showPage('promesse', document.querySelector('.tab[onclick*="promesse"]'));
@@ -4110,6 +4326,44 @@ function showDocumentReadyBanner(type) {
 // ── FAQ toggle ──
 function toggleFaq(el) {
   el.classList.toggle('open');
+}
+
+
+// ── VISUALISEUR DOCUMENT (remplace window.open pour éviter le blocage popup) ──
+function openDocViewer(html, title) {
+  // Supprimer un viewer existant
+  const old = document.getElementById('doc-viewer-overlay');
+  if (old) old.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'doc-viewer-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#374151;display:flex;flex-direction:column';
+
+  overlay.innerHTML = `
+    <div style="background:#1e293b;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+      <span style="color:white;font-weight:700;font-size:0.9rem">📄 ${title || 'Document'}</span>
+      <div style="display:flex;gap:8px">
+        <button onclick="window.frames['doc-iframe'].contentWindow.print()"
+          style="background:#2563eb;color:white;border:none;padding:7px 16px;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer">
+          🖨️ Imprimer / PDF
+        </button>
+        <button onclick="document.getElementById('doc-viewer-overlay').remove()"
+          style="background:#475569;color:white;border:none;padding:7px 14px;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer">
+          ✕ Fermer
+        </button>
+      </div>
+    </div>
+    <iframe name="doc-iframe" id="doc-iframe"
+      style="flex:1;border:none;background:white"></iframe>
+  `;
+
+  document.body.appendChild(overlay);
+
+  // Écrire le HTML dans l'iframe (pas de popup, pas de blocage)
+  const iframe = document.getElementById('doc-iframe');
+  iframe.contentDocument.open();
+  iframe.contentDocument.write(html);
+  iframe.contentDocument.close();
 }
 
 // ── RETOUR STRIPE ──
@@ -4173,6 +4427,16 @@ function checkStripeReturn() {
     const data = JSON.parse(localStorage.getItem('spp_pending_promesse') || '{}');
     localStorage.removeItem('spp_pending_promesse');
     if (Object.keys(data).length > 0) {
+      // Supprimer le brouillon correspondant
+      if (typeof _currentDraftId !== 'undefined' && _currentDraftId) {
+        const dr = loadDrafts().filter(d => d.id !== _currentDraftId);
+        saveDrafts(dr); _currentDraftId = null; updateDraftBadge();
+      } else {
+        // Chercher et supprimer le brouillon par nom du salarié
+        const nom = ((data.sal_prenom || '') + ' ' + (data.sal_nom || '')).trim().toLowerCase();
+        const dr = loadDrafts().filter(d => !(d.type === 'promesse' && d.label.toLowerCase().includes(nom)));
+        saveDrafts(dr); updateDraftBadge();
+      }
       setTimeout(() => {
         showToast('✅ Paiement confirmé ! Génération de votre promesse...');
         setTimeout(() => {
@@ -4341,6 +4605,7 @@ function adminLoadFields() {
   set('adm-promo-promesse',  c.promo_prix_promesse);
   set('adm-promo-contrat',   c.promo_prix_contrat);
   set('adm-promo-fin',       c.promo_fin);
+  set('adm-delai-modif',     c.delai_modif_heures ?? 24);
   set('adm-app-nom',         c.app_nom);
   set('adm-app-tagline',     c.app_tagline);
   chk('adm-welcome-actif',   c.welcome_actif !== false);
@@ -4394,6 +4659,7 @@ function adminSave() {
     app_nom:             g('adm-app-nom')        || c.app_nom,
     app_tagline:         g('adm-app-tagline')    || c.app_tagline,
     welcome_actif:       c_chk('adm-welcome-actif'),
+    delai_modif_heures:  parseInt(g('adm-delai-modif') || '24') || 0,
     admin_pass:          newPass || c.admin_pass,
   };
   
@@ -4563,6 +4829,17 @@ window.onload = () => {
             <input type="checkbox" id="adm-welcome-actif" style="width:16px;height:16px">
             Afficher l'écran d'accueil au lancement
           </label>
+        </div>
+      </div>
+
+      <!-- Section MODIFICATION -->
+      <div style="background:white;border-radius:14px;padding:18px;margin-bottom:12px">
+        <div style="font-weight:900;color:#0f172a;font-size:0.88rem;margin-bottom:14px">✏️ Modification documents</div>
+        <div style="margin-bottom:6px">
+          <label style="font-size:0.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px">Délai avant modification (heures)</label>
+          <input type="number" id="adm-delai-modif" min="0" max="168" placeholder="24"
+            style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:0.82rem;box-sizing:border-box;font-family:'DM Sans',sans-serif">
+          <div style="font-size:0.68rem;color:#94a3b8;margin-top:4px">Fenêtre de modification après génération. 24 = modifiable pendant 24h · 48 = pendant 48h · 0 = jamais. Max 168h (7 jours).</div>
         </div>
       </div>
 
