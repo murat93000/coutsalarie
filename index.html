@@ -12,6 +12,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>CoûtSalarié Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>emailjs.init("dNnh83CZhnEQHlGdN");</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -436,6 +438,41 @@ input:focus, select:focus { border-color: var(--blue-500); background: var(--whi
 .smic-btn:active { opacity: 0.85; }
 
 /* ── HEADER PROFILE BTN ── */
+/* ── PAGE SUPPORT ── */
+.faq-item {
+  border-bottom: 1px solid #f1f5f9;
+  padding: 10px 0;
+  cursor: pointer;
+}
+.faq-item:last-child { border-bottom: none; }
+.faq-q {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.faq-arrow { color: #2563eb; font-size: 0.65rem; flex-shrink: 0; transition: transform 0.2s; }
+.faq-item.open .faq-arrow { transform: rotate(180deg); }
+.faq-a {
+  display: none;
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1.55;
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border-left: 3px solid #2563eb;
+}
+.faq-item.open .faq-a { display: block; }
+#sup-email:focus, #sup-sujet:focus, #sup-message:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
 /* ── ONBOARDING TOOLTIP ── */
 #onboarding-tooltip {
   position: fixed;
@@ -842,7 +879,7 @@ input:focus, select:focus { border-color: var(--blue-500); background: var(--whi
   <div class="logo" id="logo-tap" onclick="adminTapDetect()" style="cursor:default;user-select:none">
     <div class="logo-icon" style="display:flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="34" height="34" style="flex-shrink:0;margin-right:2px"><defs><linearGradient id="cslg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#60a5fa"/><stop offset="100%" style="stop-color:#3b82f6"/></linearGradient></defs><rect width="36" height="36" rx="9" fill="rgba(255,255,255,0.12)"/><circle cx="18" cy="12" r="5" fill="white" opacity="0.95"/><path d="M9 28 Q9 20 18 20 Q27 20 27 28" fill="white" opacity="0.95"/><circle cx="27.5" cy="26.5" r="6.5" fill="#f59e0b"/><text x="27.5" y="30.5" text-anchor="middle" font-size="8.5" font-weight="900" fill="white" font-family="Arial,sans-serif">€</text></svg></div>
     <span class="logo-text">CoûtSalarié</span>
-    <span class="logo-badge">PRO</span><span style="font-size:0.5rem;color:rgba(255,255,255,0.3);margin-left:6px">v4.1</span>
+    <span class="logo-badge">PRO</span><span style="font-size:0.5rem;color:rgba(255,255,255,0.3);margin-left:6px">v4.4</span>
   </div>
   <div style="display:flex;gap:8px;align-items:center">
     <button id="pwa-install-btn" onclick="installPWA()" style="display:none;align-items:center;gap:5px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:8px;color:white;font-size:0.72rem;font-weight:800;padding:7px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">
@@ -878,6 +915,7 @@ input:focus, select:focus { border-color: var(--blue-500); background: var(--whi
   <div class="tab tab-premium" onclick="showPage('promesse', this)">✉️ Promesse<span class="tab-price" id="nav-prix-promesse">7,99€</span></div>
   <div class="tab tab-premium" onclick="showPage('contrats', this)">📝 Contrat<span class="tab-price" id="nav-prix-contrat">19,99€</span></div>
   <div class="tab" onclick="showPage('historique', this)">📋 Historique</div>
+  <div class="tab" onclick="showPage('support', this)">🆘 Support</div>
 </div>
 
 
@@ -899,7 +937,7 @@ input:focus, select:focus { border-color: var(--blue-500); background: var(--whi
   </div>
 
   <!-- Bannière upsell -->
-  <div class="upsell-banner">
+<div class="upsell-banner">
     <div class="upsell-banner-title">📄 Vous recrutez ?</div>
     <div class="upsell-banner-sub">Un expert-comptable facture <strong style="color:#fbbf24">150 à 300 €</strong> pour rédiger un contrat. Avec CoûtSalarié Pro, générez vos documents RH officiels <strong style="color:#fbbf24">en 2 minutes</strong>, pour une fraction du prix.</div>
     <div class="upsell-banner-btns">
@@ -1004,6 +1042,80 @@ input:focus, select:focus { border-color: var(--blue-500); background: var(--whi
     <div id="hist-contracts-list"></div>
   </div>
 </div>
+
+<div class="page" id="page-support">
+  <div style="max-width:560px;margin:0 auto;padding:16px">
+
+    <!-- Header support -->
+    <div style="background:linear-gradient(135deg,#1e3a5f,#1e40af);border-radius:16px;padding:20px;margin-bottom:16px;text-align:center">
+      <div style="font-size:2rem;margin-bottom:8px">🆘</div>
+      <div style="font-size:1.1rem;font-weight:800;color:white;margin-bottom:4px">Centre d'aide</div>
+      <div style="font-size:0.72rem;color:rgba(255,255,255,0.7)">Réponse sous 24h par email</div>
+    </div>
+
+    <!-- FAQ rapide -->
+    <div style="background:white;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+      <div style="font-size:0.85rem;font-weight:800;color:#0f172a;margin-bottom:12px">❓ Questions fréquentes</div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Je n'ai pas reçu mon document après paiement <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Après le paiement Stripe, vous êtes redirigé automatiquement sur l'app et votre document se génère. Si ce n'est pas le cas, utilisez le formulaire ci-dessous en indiquant votre email de paiement — nous vous renverrons votre document sous 24h.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Comment modifier un document déjà généré ? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Retournez dans l'onglet Promesse ou Contrat, modifiez vos données et re-générez gratuitement. Un seul paiement suffit pour plusieurs générations.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Le document est-il juridiquement valide ? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Oui. Nos modèles sont conformes au Code du travail français et aux conventions collectives. Pour toute situation complexe ou litige, nous recommandons de consulter un avocat spécialisé en droit social.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Comment obtenir un remboursement ? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Contactez-nous via le formulaire ci-dessous dans les 7 jours suivant votre achat. Si le document ne correspond pas à votre besoin, nous vous remboursons intégralement.</div>
+      </div>
+    </div>
+
+    <!-- Formulaire contact -->
+    <div style="background:white;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+      <div style="font-size:0.85rem;font-weight:800;color:#0f172a;margin-bottom:14px">✉️ Contacter le support</div>
+
+      <div style="margin-bottom:10px">
+        <label style="font-size:0.7rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px">Votre email *</label>
+        <input id="sup-email" type="email" placeholder="votre@email.com"
+          style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:0.82rem;font-family:'DM Sans',sans-serif;box-sizing:border-box;outline:none">
+      </div>
+
+      <div style="margin-bottom:10px">
+        <label style="font-size:0.7rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px">Sujet *</label>
+        <select id="sup-sujet"
+          style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:0.82rem;font-family:'DM Sans',sans-serif;box-sizing:border-box;background:white;outline:none">
+          <option value="">-- Choisissez un sujet --</option>
+          <option value="Document non reçu">📄 Document non reçu après paiement</option>
+          <option value="Problème technique">🔧 Problème technique</option>
+          <option value="Demande de remboursement">💶 Demande de remboursement</option>
+          <option value="Question sur le contenu">❓ Question sur le contenu du document</option>
+          <option value="Autre">💬 Autre</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label style="font-size:0.7rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px">Message *</label>
+        <textarea id="sup-message" rows="4" placeholder="Décrivez votre problème en détail..."
+          style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:0.82rem;font-family:'DM Sans',sans-serif;box-sizing:border-box;resize:vertical;outline:none"></textarea>
+      </div>
+
+      <button onclick="sendSupport()"
+        style="width:100%;padding:13px;background:linear-gradient(135deg,#1e40af,#2563eb);color:white;border:none;border-radius:10px;font-size:0.88rem;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 4px 12px rgba(37,99,235,0.3)">
+        📨 Envoyer ma demande
+      </button>
+
+      <div style="font-size:0.62rem;color:#94a3b8;text-align:center;margin-top:10px">
+        🔒 Vos données ne sont utilisées que pour traiter votre demande
+      </div>
+    </div>
+
+  </div>
+</div>
+
 
 <!-- ════════════════ PAGE PROMESSE PDF ════════════════ -->
 <div class="page" id="page-promesse">
@@ -2322,6 +2434,13 @@ function wizBack() {
 }
 
 function wizPay() {
+  // Sauvegarder les données du wizard dans localStorage pour récupération après paiement
+  localStorage.setItem('spp_pending_contrat', JSON.stringify(WIZ.data));
+  localStorage.setItem('spp_pending_type', 'contrat');
+  // Redirection vers Stripe Payment Link
+  window.location.href = 'https://buy.stripe.com/4gM28r7GB0eo3dw47f7Vm01';
+}
+function wizPay_OLD() {
   const modal = document.createElement('div');
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
   modal.innerHTML = `
@@ -3041,6 +3160,13 @@ function promBuildRecap() {
 }
 
 function promPay() {
+  // Sauvegarder les données de la promesse dans localStorage pour récupération après paiement
+  localStorage.setItem('spp_pending_promesse', JSON.stringify(WIZ_PROM?.data || {}));
+  localStorage.setItem('spp_pending_type', 'promesse');
+  // Redirection vers Stripe Payment Link
+  window.location.href = 'https://buy.stripe.com/5kQ9AT5yt4uE8xQ47f7Vm00';
+}
+function promPay_OLD() {
   const modal = document.createElement('div');
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
   modal.innerHTML = `
@@ -3347,9 +3473,122 @@ function upsellGo(page) {
 }
 
 
+// ══════════════════════════════════════
+// SENDGRID — Envoi emails
+
+// ── 1. Formulaire Support → email vers vous ──
+async function sendSupport() {
+  const email   = document.getElementById('sup-email')?.value?.trim();
+  const sujet   = document.getElementById('sup-sujet')?.value;
+  const message = document.getElementById('sup-message')?.value?.trim();
+
+  if (!email || !sujet || !message) { showToast('⚠️ Veuillez remplir tous les champs'); return; }
+  if (!email.includes('@')) { showToast('⚠️ Email invalide'); return; }
+
+  const btn = document.querySelector('#page-support button[onclick="sendSupport()"]');
+  if (btn) { btn.innerHTML = '⏳ Envoi en cours...'; btn.disabled = true; }
+
+  try {
+    await emailjs.send('service_z7zwg4m', 'template_tjq1yew', {
+      from_email: email,
+      sujet:      sujet,
+      message:    message,
+      date:       new Date().toLocaleString('fr-FR')
+    });
+    showToast('✅ Message envoyé ! Réponse sous 24h.');
+    document.getElementById('sup-email').value = '';
+    document.getElementById('sup-sujet').value = '';
+    document.getElementById('sup-message').value = '';
+  } catch(e) {
+    console.error('EmailJS error:', e);
+    showToast('❌ Erreur envoi. Contactez mkmurat3@gmail.com');
+  }
+  if (btn) { btn.innerHTML = '📨 Envoyer ma demande'; btn.disabled = false; }
+}
+
+async function sendSaleNotif(docType, clientEmail, salarie, montant) {
+  try {
+    await emailjs.send('service_z7zwg4m', 'template_fydo99b', {
+      doc_type:     docType,
+      montant:      montant,
+      client_email: clientEmail || 'Non renseigné',
+      salarie:      salarie || 'Non renseigné',
+      date:         new Date().toLocaleString('fr-FR')
+    });
+  } catch(e) { console.error('EmailJS vente error:', e); }
+}
+
+async function sendDocumentToClient(clientEmail, clientName, docType) {
+  await sendSaleNotif(docType, clientEmail, clientName, 'déjà payé');
+}
+
+// ── FAQ toggle ──
+function toggleFaq(el) {
+  el.classList.toggle('open');
+}
+
+// ── RETOUR STRIPE ──
+function checkStripeReturn() {
+  const params = new URLSearchParams(window.location.search);
+  // Stripe Payment Links ajoutent ?payment_intent_client_secret=... ou on peut détecter le retour
+  // On utilise le pending stocké en localStorage
+  const pendingType = localStorage.getItem('spp_pending_type');
+  if (!pendingType) return;
+
+  // Vérifier qu'on revient bien depuis une page Stripe (referrer ou param)
+  const fromStripe = document.referrer.includes('stripe.com') ||
+                     document.referrer.includes('buy.stripe.com') ||
+                     params.has('payment_intent') ||
+                     params.has('session_id');
+  if (!fromStripe) return;
+
+  // Nettoyer immédiatement pour éviter double génération
+  localStorage.removeItem('spp_pending_type');
+
+  if (pendingType === 'contrat') {
+    const data = JSON.parse(localStorage.getItem('spp_pending_contrat') || '{}');
+    localStorage.removeItem('spp_pending_contrat');
+    if (Object.keys(data).length > 0) {
+      setTimeout(() => {
+        showToast('✅ Paiement confirmé ! Génération de votre contrat...');
+        setTimeout(() => {
+          // Restaurer WIZ et générer
+          if (typeof WIZ !== 'undefined') {
+            WIZ.data = data;
+            generateContract();
+            // Notif vente
+            const sal = (data.sal_prenom || '') + ' ' + (data.sal_nom || '');
+            sendSaleNotif('Contrat ' + (data.type||'CDI').toUpperCase(), data.client_email || '', sal.trim(), prixLabel(prixContrat()));
+            if (data.client_email) sendDocumentToClient(data.client_email, data.emp_nom_prenom, 'Contrat ' + (data.type||'CDI').toUpperCase());
+          }
+          else { showToast("✅ Paiement reçu ! Retournez à l'étape de génération."); }
+        }, 1500);
+      }, 500);
+    }
+  } else if (pendingType === 'promesse') {
+    const data = JSON.parse(localStorage.getItem('spp_pending_promesse') || '{}');
+    localStorage.removeItem('spp_pending_promesse');
+    if (Object.keys(data).length > 0) {
+      setTimeout(() => {
+        showToast('✅ Paiement confirmé ! Génération de votre promesse...');
+        setTimeout(() => {
+          if (typeof WIZ_PROM !== 'undefined') {
+            WIZ_PROM.data = data;
+            generatePromesse();
+            const sal = (data.sal_prenom || '') + ' ' + (data.sal_nom || '');
+            sendSaleNotif("Promesse d'embauche", data.client_email || '', sal.trim(), prixLabel(prixPromesse()));
+            if (data.client_email) sendDocumentToClient(data.client_email, data.emp_nom_prenom, "Promesse d'embauche");
+          }
+          else { showToast("✅ Paiement reçu ! Retournez à l'étape de génération."); }
+        }, 1500);
+      }, 500);
+    }
+  }
+}
+
 // ── ONBOARDING TOOLTIP ──
 function showOnboarding() {
-  const APP_VERSION = '4.1';
+  const APP_VERSION = '4.4';
   const profile = JSON.parse(localStorage.getItem('spp_profile') || '{}');
   const hasProfile = profile.emp_denomination && profile.emp_denomination.trim().length > 0;
   // Lié à la version : si version change → tuto réapparaît
@@ -3364,7 +3603,7 @@ function showOnboarding() {
   }, 900);
 }
 function closeOnboarding() {
-  const APP_VERSION = '4.1';
+  const APP_VERSION = '4.4';
   const tt = document.getElementById('onboarding-tooltip');
   const ar = document.getElementById('onboarding-arrow');
   if (tt) { tt.style.opacity='0'; tt.style.transform='scale(0.9)'; tt.style.transition='all 0.25s'; setTimeout(()=>{ if(tt) tt.style.display='none'; }, 250); }
@@ -3613,6 +3852,8 @@ window.onload = () => {
   }
   applyConfig();
   showOnboarding();
+  // ── Récupération après retour Stripe ──
+  checkStripeReturn();
   addEmployee();
   runComparison();
   renderHistory();
