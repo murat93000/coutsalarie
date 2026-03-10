@@ -946,6 +946,12 @@ input:focus, select:focus { border-color: var(--blue-500); background: var(--whi
 }
 .draft-autosave.show { opacity:1; }
 
+
+@keyframes slideDown {
+  from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+}
+
 </style>
 </head>
 <body>
@@ -3073,7 +3079,8 @@ function promGetSteps() {
         { id: 'sal_civilite', label: 'Civilité',          type: 'select', options: ['M.','Mme'], required: true },
         { id: 'sal_nom',      label: 'Nom',               type: 'text',   placeholder: 'DURAND', required: true },
         { id: 'sal_prenom',   label: 'Prénom',            type: 'text',   placeholder: 'Marie', required: true },
-        { id: 'sal_adresse',  label: 'Adresse complète',  type: 'text',   placeholder: '5 avenue des Lilas, 69001 Lyon', required: false }
+        { id: 'sal_adresse',  label: 'Adresse complète',  type: 'text',   placeholder: '5 avenue des Lilas, 69001 Lyon', required: false },
+        { id: 'client_email', label: 'Email du salarié (pour envoi du document)', type: 'text', placeholder: 'marie.durand@email.com', required: false }
       ]
     },
     {
@@ -3293,8 +3300,9 @@ function promPay() {
   // Sauvegarder les données de la promesse dans localStorage pour récupération après paiement
   localStorage.setItem('spp_pending_promesse', JSON.stringify(PROM?.data || {}));
   localStorage.setItem('spp_pending_type', 'promesse');
+  localStorage.setItem('spp_pending_time', Date.now().toString());
   // Redirection vers Stripe Payment Link
-  window.location.href = 'https://buy.stripe.com/3cI00i7gsbsf0Xx0kxaEE00';
+  window.location.href = 'https://buy.stripe.com/test_aFaeVcaxof819Uw6uye7m00';
 }
 function promPay_OLD() {
   const modal = document.createElement('div');
@@ -3571,6 +3579,7 @@ function renderPromesses() {
       <div class="contract-hist-actions">
         <button class="btn-hist-view" onclick="viewPromesse(${p.id})">👁 Consulter</button>
         <button class="btn-hist-mail" onclick="sharePromesseByMail(${p.id})">✉️ Partager</button>
+        <button class="btn-hist-view" style="background:#fef3c7;color:#92400e;border-color:#f59e0b" onclick="openModifModal()">✏️ Modifier</button>
         <button class="btn-hist-del" onclick="deletePromesse(${p.id})">🗑</button>
       </div>
     </div>`).join('');
@@ -3977,6 +3986,106 @@ function updateDraftBadge() {
   } else if (badge) { badge.remove(); }
 }
 
+
+// ── Bouton de secours si retour Stripe non détecté ──
+function checkPendingPayment() {
+  const pendingType = localStorage.getItem('spp_pending_type');
+  const pendingTime = parseInt(localStorage.getItem('spp_pending_time') || '0');
+  if (!pendingType || !pendingTime) return;
+
+  const elapsed = Date.now() - pendingTime;
+  // Si > 2 minutes et < 30 minutes → probablement revenu de Stripe sans détection
+  if (elapsed > 2 * 60 * 1000 && elapsed < 30 * 60 * 1000) {
+    showToast('💳 Paiement en attente détecté — cliquez ici pour générer votre document', 8000);
+    // Afficher bannière de récupération
+    const banner = document.createElement('div');
+    banner.id = 'pending-payment-banner';
+    banner.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#1e3a5f;color:white;padding:12px 20px;border-radius:12px;z-index:9999;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:340px;width:90%';
+    banner.innerHTML = `<div style="font-size:0.9rem;font-weight:600;margin-bottom:8px">💳 Vous avez un paiement en attente</div>
+      <div style="font-size:0.78rem;opacity:0.8;margin-bottom:10px">Cliquez pour générer votre document</div>
+      <button onclick="forceGenerateAfterPayment()" style="background:#2563eb;color:white;border:none;padding:8px 20px;border-radius:8px;font-weight:600;cursor:pointer;width:100%">
+        📄 Générer mon document
+      </button>
+      <button onclick="this.parentElement.remove();clearPending();" style="background:transparent;color:rgba(255,255,255,0.6);border:none;font-size:0.75rem;margin-top:6px;cursor:pointer;display:block;width:100%">
+        Annuler (je n'ai pas payé)
+      </button>`;
+    document.body.appendChild(banner);
+  }
+}
+
+function clearPending() {
+  localStorage.removeItem('spp_pending_type');
+  localStorage.removeItem('spp_pending_contrat');
+  localStorage.removeItem('spp_pending_promesse');
+  localStorage.removeItem('spp_pending_time');
+}
+
+function forceGenerateAfterPayment() {
+  const banner = document.getElementById('pending-payment-banner');
+  if (banner) banner.remove();
+  // Simuler un retour Stripe en forçant checkStripeReturn
+  const pendingType = localStorage.getItem('spp_pending_type');
+  localStorage.removeItem('spp_pending_type'); // Éviter boucle
+  if (pendingType === 'contrat') {
+    const data = JSON.parse(localStorage.getItem('spp_pending_contrat') || '{}');
+    localStorage.removeItem('spp_pending_contrat');
+    localStorage.removeItem('spp_pending_time');
+    if (Object.keys(data).length > 0) {
+      showToast('✅ Génération de votre contrat...');
+      setTimeout(() => {
+        showPage('contrats', document.querySelector('.tab[onclick*="contrats"]'));
+        setTimeout(() => { WIZ.data = data; generateContract(); }, 500);
+      }, 300);
+    }
+  } else if (pendingType === 'promesse') {
+    const data = JSON.parse(localStorage.getItem('spp_pending_promesse') || '{}');
+    localStorage.removeItem('spp_pending_promesse');
+    localStorage.removeItem('spp_pending_time');
+    if (Object.keys(data).length > 0) {
+      showToast('✅ Génération de votre promesse...');
+      setTimeout(() => {
+        showPage('promesse', document.querySelector('.tab[onclick*="promesse"]'));
+        setTimeout(() => { PROM.data = data; generatePromesse(); }, 500);
+      }, 300);
+    }
+  }
+}
+
+
+// ── Bannière "Document prêt dans historique" ──
+function showDocumentReadyBanner(type) {
+  // Supprimer ancienne bannière si existe
+  const old = document.getElementById('doc-ready-banner');
+  if (old) old.remove();
+
+  const label = type === 'contrat' ? 'contrat' : "promesse d'embauche";
+  const icon  = type === 'contrat' ? '📋' : '✉️';
+  const tabTarget = type === 'contrat' ? 'contrats' : 'promesses';
+
+  const banner = document.createElement('div');
+  banner.id = 'doc-ready-banner';
+  banner.style.cssText = 'position:fixed;top:70px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#1e3a5f,#2563eb);color:white;padding:14px 20px;border-radius:14px;z-index:9999;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.3);max-width:360px;width:90%;animation:slideDown 0.3s ease';
+  banner.innerHTML = `
+    <div style="font-size:1.3rem;margin-bottom:4px">${icon}</div>
+    <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px">Votre ${label} est prêt !</div>
+    <div style="font-size:0.78rem;opacity:0.85;margin-bottom:10px">Consultable à tout moment dans l'historique</div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button onclick="switchHistTab('${tabTarget}');showPage('historique',document.querySelector('.tab[onclick*=\"historique\"]'));this.closest('#doc-ready-banner').remove()" 
+        style="background:white;color:#1e3a5f;border:none;padding:7px 16px;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer">
+        📋 Voir dans l'historique
+      </button>
+      <button onclick="this.closest('#doc-ready-banner').remove()" 
+        style="background:rgba(255,255,255,0.15);color:white;border:none;padding:7px 12px;border-radius:8px;font-size:0.82rem;cursor:pointer">
+        ✕
+      </button>
+    </div>`;
+
+  document.body.appendChild(banner);
+
+  // Auto-fermeture après 10 secondes
+  setTimeout(() => { if (document.getElementById('doc-ready-banner')) banner.remove(); }, 10000);
+}
+
 // ── FAQ toggle ──
 function toggleFaq(el) {
   el.classList.toggle('open');
@@ -3990,12 +4099,19 @@ function checkStripeReturn() {
   const pendingType = localStorage.getItem('spp_pending_type');
   if (!pendingType) return;
 
-  // Vérifier qu'on revient bien depuis une page Stripe (referrer ou param)
-  const fromStripe = document.referrer.includes('stripe.com') ||
-                     document.referrer.includes('buy.stripe.com') ||
-                     params.has('payment_intent') ||
-                     params.has('session_id');
-  if (!fromStripe) return;
+  // Stripe redirige souvent sans referrer (politique sécurité navigateur)
+  // spp_pending_type + délai < 30min = preuve suffisante du retour Stripe
+  const pendingTime = parseInt(localStorage.getItem('spp_pending_time') || '0');
+  const elapsed = Date.now() - pendingTime;
+  const validWindow = elapsed < 30 * 60 * 1000; // 30 minutes max
+  if (!validWindow && pendingTime > 0) {
+    // Trop vieux — nettoyer
+    localStorage.removeItem('spp_pending_type');
+    localStorage.removeItem('spp_pending_contrat');
+    localStorage.removeItem('spp_pending_promesse');
+    localStorage.removeItem('spp_pending_time');
+    return;
+  }
 
   // Nettoyer immédiatement pour éviter double génération
   localStorage.removeItem('spp_pending_type');
@@ -4315,6 +4431,8 @@ window.onload = () => {
   // ── Récupération après retour Stripe ──
   checkStripeReturn();
   checkDraftsOnStart();
+  // Afficher bouton de secours si paiement pending non traité
+  checkPendingPayment();
   addEmployee();
   runComparison();
   renderHistory();
