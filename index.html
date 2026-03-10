@@ -4131,6 +4131,12 @@ function checkStripeReturn() {
           if (typeof WIZ !== 'undefined') {
             WIZ.data = data;
             generateContract();
+            // Aller automatiquement sur l'historique
+            setTimeout(() => {
+              showPage('historique', document.querySelector('.tab[onclick*="historique"]'));
+              switchHistTab('contrats');
+              showDocumentReadyBanner('contrat');
+            }, 2000);
             // Notif vente
             const sal = (data.sal_prenom || '') + ' ' + (data.sal_nom || '');
             const modifCodeContrat = generateModifCode();
@@ -4151,6 +4157,12 @@ function checkStripeReturn() {
         setTimeout(() => {
           PROM.data = data;
           generatePromesse();
+          // Aller automatiquement sur l'historique
+          setTimeout(() => {
+            showPage('historique', document.querySelector('.tab[onclick*="historique"]'));
+            switchHistTab('promesses');
+            showDocumentReadyBanner('promesse');
+          }, 2000);
           const sal = (data.sal_prenom || '') + ' ' + (data.sal_nom || '');
           const modifCodeProm = generateModifCode();
           saveModifCode(modifCodeProm, 'promesse', data);
