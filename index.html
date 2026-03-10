@@ -2561,9 +2561,12 @@ function wizBack() {
 }
 
 function wizPay() {
-  // Sauvegarder les données du wizard dans localStorage pour récupération après paiement
-  localStorage.setItem('spp_pending_contrat', JSON.stringify(WIZ.data));
+  // Collecter les champs de l'étape actuelle AVANT de sauvegarder
+  wizCollectStep();
+  const dataToSave = { ...WIZ.data };
+  localStorage.setItem('spp_pending_contrat', JSON.stringify(dataToSave));
   localStorage.setItem('spp_pending_type', 'contrat');
+  localStorage.setItem('spp_pending_time', Date.now().toString());
   // Redirection vers Stripe Payment Link
   window.location.href = 'https://buy.stripe.com/aFadR8eIUcwjbCbgjvaEE01';
 }
