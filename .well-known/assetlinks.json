@@ -1,0 +1,10 @@
+[{
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+          "namespace": "android_app",
+          "package_name": "io.github.murat93000.twa",
+          "sha256_cert_fingerprints": [
+                  "CA:72:34:B2:3F:3D:BB:C0:AD:51:BC:B3:65:80:C3:65:A5:0A:94:FE"
+          ]
+    }
+}]
