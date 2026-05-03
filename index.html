@@ -1418,7 +1418,7 @@ function prixContrat() {
   if (c.promo_active && c.promo_prix_contrat) return c.promo_prix_contrat;
   return c.prix_contrat;
 }
-function prixLabel(p) { return p.replace('.', ',') + ' €'; }
+function prixLabel(p) { return String(p).replace('.', ',') + ' €'; }
 
 let history = JSON.parse(localStorage.getItem('spp_history') || '[]');
 
@@ -2852,7 +2852,7 @@ function wizGenerate() {
       ? `<p>Le présent contrat pourra être renouvelé <strong>${renouvellement.replace('Oui — ','')}</strong>, par accord entre les parties, sans que sa durée totale renouvellement(s) compris ne puisse excéder la durée maximale prévue par la loi ou la convention collective applicable. Les conditions du renouvellement feront l'objet d'un avenant à signer avant l'expiration du terme initial.</p>`
       : ''
     }
-    <p>À l'issue du présent contrat, sauf embauche en CDI, ${salref_lower(salRef)} percevra une <strong>indemnité de fin de contrat</strong> égale à 10 % de la rémunération totale brute perçue (article L. 1243-8 du Code du travail).</p>
+    <p>À l'issue du présent contrat, sauf embauche en CDI, ${salRef} percevra une <strong>indemnité de fin de contrat</strong> égale à 10 % de la rémunération totale brute perçue (article L. 1243-8 du Code du travail).</p>
     ${essaiTextCDD}`;
   }
 
@@ -4783,8 +4783,8 @@ function applyConfig() {
   // Onglets
   const np = document.getElementById('nav-prix-promesse');
   const nc = document.getElementById('nav-prix-contrat');
-  if (np) np.textContent = pp + '€';
-  if (nc) nc.textContent = pc + '€';
+  if (np) np.textContent = prixLabel(pp);
+  if (nc) nc.textContent = prixLabel(pc);
 
   // Upsell bannière (desktop + mobile mini)
   const up = document.getElementById('upsell-prix-promesse');
