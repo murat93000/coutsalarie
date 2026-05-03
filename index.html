@@ -2225,12 +2225,14 @@ function wizRender() {
 
   if (step.id === 'recap') {
     html += buildRecap();
-    html += `<div class="form-group" style="margin:12px 0">
-      <label style="font-size:0.82rem;font-weight:600;color:#334155;display:block;margin-bottom:5px">Conditions spécifiques (optionnel)</label>
-      <textarea id="wiz_conditions_specifiques" rows="4" placeholder="Ex: clause de non-concurrence, avantages en nature, véhicule de fonction..." style="width:100%;border:1.5px solid #cbd5e1;border-radius:8px;padding:10px;font-size:0.85rem;font-family:inherit;resize:vertical" oninput="WIZ.data.conditions_specifiques=this.value">${WIZ.data.conditions_specifiques || ''}</textarea>
-    </div>`;
   } else {
     html += buildFields(step.fields, step);
+    if (step.id === 'remuneration') {
+      html += `<div class="form-group" style="margin-top:14px">
+        <label style="font-size:0.82rem;font-weight:600;color:#334155;display:block;margin-bottom:5px">Conditions spécifiques (optionnel)</label>
+        <textarea id="wiz_conditions_specifiques" rows="4" placeholder="Ex: clause de non-concurrence, avantages en nature, véhicule de fonction..." style="width:100%;border:1.5px solid #cbd5e1;border-radius:8px;padding:10px;font-size:0.85rem;font-family:inherit;resize:vertical" oninput="WIZ.data.conditions_specifiques=this.value">${WIZ.data.conditions_specifiques || ''}</textarea>
+      </div>`;
+    }
   }
 
   html += `</div>`;
@@ -2570,16 +2572,16 @@ function wizCollectStep() {
   const type = WIZ.data.type || '';
   const steps = getSteps(type);
   const step = steps[WIZ.step];
-  if (!step || step.id === 'recap') {
-    const condEl = document.getElementById('wiz_conditions_specifiques');
-    if (condEl) WIZ.data.conditions_specifiques = condEl.value;
-    return true;
-  }
+  if (!step || step.id === 'recap') return true;
 
   for (const f of step.fields) {
     if (f.type === 'choice' || f.type === 'toggle') continue;
     const el = document.getElementById('wf_' + f.id);
     if (el) WIZ.data[f.id] = el.value;
+  }
+  if (step.id === 'remuneration') {
+    const condEl = document.getElementById('wiz_conditions_specifiques');
+    if (condEl) WIZ.data.conditions_specifiques = condEl.value;
   }
   return true;
 }
@@ -2609,7 +2611,7 @@ function wizBack() {
 
 function wizPay() {
   wizCollectStep();
-  if (Number(String(prixContrat()).replace(',', '.')) === 0) {
+  if (prixContrat() === 0 || prixContrat() === '0') {
     WIZ.paid = true;
     wizGenerate();
     return;
@@ -3661,7 +3663,7 @@ function promBuildRecap() {
 
 function promPay() {
   promCollectStep();
-  if (Number(String(prixPromesse()).replace(',', '.')) === 0) {
+  if (prixPromesse() === 0 || prixPromesse() === '0') {
     PROM.paid = true;
     promGenerate();
     return;
