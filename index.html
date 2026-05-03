@@ -577,6 +577,32 @@ input:focus, select:focus { border-color: var(--blue-500); background: var(--whi
   white-space: nowrap;
 }
 .header-profile-btn:hover { background: rgba(255,255,255,0.18); }
+.more-menu-btn {
+  display: none; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;
+  padding: 6px 12px; font-size: 1.1rem; font-weight: 700;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  letter-spacing: 2px; line-height: 1; white-space: nowrap;
+}
+.more-menu-btn:hover { background: rgba(255,255,255,0.18); }
+.more-menu {
+  display: none; position: absolute; top: calc(100% + 6px); right: 0;
+  background: #1e293b; border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px; min-width: 160px; z-index: 700;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35); overflow: hidden;
+}
+.more-menu.open { display: block; }
+.more-menu-item {
+  padding: 13px 16px; font-size: 0.82rem; color: rgba(255,255,255,0.82);
+  cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 600;
+  transition: background 0.15s;
+}
+.more-menu-item:hover { background: rgba(255,255,255,0.08); }
+@media (max-width: 768px) {
+  .tab-hidden-mobile { display: none !important; }
+  .more-menu-btn { display: flex; }
+}
 
 /* ── PROFIL MODAL ── */
 .profile-modal-overlay {
@@ -966,6 +992,13 @@ input:focus, select:focus { border-color: var(--blue-500); background: var(--whi
     <button id="pwa-install-btn" onclick="installPWA()" style="display:none;align-items:center;gap:5px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:8px;color:white;font-size:0.72rem;font-weight:800;padding:7px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">
       📲 Installer
     </button>
+    <div id="more-menu-wrap" style="position:relative">
+      <button class="more-menu-btn" onclick="toggleMoreMenu()" id="more-menu-trigger">···</button>
+      <div id="more-menu" class="more-menu">
+        <div class="more-menu-item" onclick="navTo('historique')">📋 Historique</div>
+        <div class="more-menu-item" onclick="navTo('support')">🆘 Support</div>
+      </div>
+    </div>
     <button class="header-profile-btn" onclick="openProfileModal()">🏢 Mon profil</button>
   </div>
 </header>
@@ -995,8 +1028,8 @@ input:focus, select:focus { border-color: var(--blue-500); background: var(--whi
   <div class="tab" onclick="showPage('comparateur', this)">⚖️ Comparateur</div>
   <div class="tab tab-premium" onclick="showPage('promesse', this)">✉️ Promesse<span class="tab-price" id="nav-prix-promesse">7,99€</span></div>
   <div class="tab tab-premium" onclick="showPage('contrats', this)">📝 Contrat<span class="tab-price" id="nav-prix-contrat">19,99€</span></div>
-  <div class="tab" onclick="showPage('historique', this)">📋 Historique</div>
-  <div class="tab" onclick="showPage('support', this)">🆘 Support</div>
+  <div class="tab tab-hidden-mobile" onclick="showPage('historique', this)">📋 Historique</div>
+  <div class="tab tab-hidden-mobile" onclick="showPage('support', this)">🆘 Support</div>
 </div>
 
 
@@ -4999,6 +5032,22 @@ function showPage(id, tabEl) {
     if (p && !p.innerHTML.trim()) promInitWithProfile();
   }
 }
+
+function navTo(id) {
+  const tabEl = document.querySelector('.tab[onclick*="' + id + '"]');
+  if (tabEl) showPage(id, tabEl);
+  closeMoreMenu();
+}
+function toggleMoreMenu() {
+  document.getElementById('more-menu').classList.toggle('open');
+}
+function closeMoreMenu() {
+  const m = document.getElementById('more-menu');
+  if (m) m.classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#more-menu-wrap')) closeMoreMenu();
+});
 
 // ═══════════════════════════════════════════
 // TOAST
