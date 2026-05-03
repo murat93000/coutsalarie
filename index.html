@@ -1371,7 +1371,7 @@ let employees = [];
 // ⚙️ CONFIG CENTRALE — modifiable depuis le panneau admin
 // ═══════════════════════════════════════════════════════════════
 const ADMIN_KEY   = 'spp_admin_config';
-const ADMIN_PASS  = 'simupro2025'; // mot de passe par défaut — changeable dans l'admin
+const ADMIN_PASS  = 'Mkdev9300'; // mot de passe par défaut — changeable dans l'admin
 
 const CONFIG_DEFAULT = {
   // Prix
@@ -1390,7 +1390,7 @@ const CONFIG_DEFAULT = {
   // Modification documents
   delai_modif_heures: 24,          // délai en heures avant de pouvoir modifier (0 = immédiat)
   // Mot de passe admin
-  admin_pass:      'simupro2025',
+  admin_pass:      'Mkdev9300',
 };
 
 function loadConfig() {
@@ -2225,6 +2225,10 @@ function wizRender() {
 
   if (step.id === 'recap') {
     html += buildRecap();
+    html += `<div class="form-group" style="margin:12px 0">
+      <label style="font-size:0.82rem;font-weight:600;color:#334155;display:block;margin-bottom:5px">Conditions spécifiques (optionnel)</label>
+      <textarea id="wiz_conditions_specifiques" rows="4" placeholder="Ex: clause de non-concurrence, avantages en nature, véhicule de fonction..." style="width:100%;border:1.5px solid #cbd5e1;border-radius:8px;padding:10px;font-size:0.85rem;font-family:inherit;resize:vertical" oninput="WIZ.data.conditions_specifiques=this.value">${WIZ.data.conditions_specifiques || ''}</textarea>
+    </div>`;
   } else {
     html += buildFields(step.fields, step);
   }
@@ -2559,7 +2563,11 @@ function wizCollectStep() {
   const type = WIZ.data.type || '';
   const steps = getSteps(type);
   const step = steps[WIZ.step];
-  if (!step || step.id === 'recap') return true;
+  if (!step || step.id === 'recap') {
+    const condEl = document.getElementById('wiz_conditions_specifiques');
+    if (condEl) WIZ.data.conditions_specifiques = condEl.value;
+    return true;
+  }
 
   for (const f of step.fields) {
     if (f.type === 'choice' || f.type === 'toggle') continue;
@@ -2945,6 +2953,8 @@ function wizGenerate() {
 
   <h2>Article ${isCDI ? '9' : '10'} — Convention collective</h2>
   <p>La convention collective applicable à ${salRef} est la suivante : <strong>${cc}</strong>.</p>
+
+  ${d.conditions_specifiques ? `<h2>Dispositions particulières</h2><p style="white-space:pre-line">${d.conditions_specifiques.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>` : ''}
 
   <div class="lieu-date">Fait à ___________, en deux exemplaires dont un est remis à ${salRef} et l'autre conservé par l'entreprise, le <strong>${today}</strong>.</div>
 
@@ -3341,6 +3351,10 @@ function promRender() {
   // ── Contenu selon étape ──
   if (step.id === 'recap') {
     html += promBuildRecap();
+    html += `<div class="form-group" style="margin:12px 0">
+      <label style="font-size:0.82rem;font-weight:600;color:#334155;display:block;margin-bottom:5px">Conditions spécifiques (optionnel)</label>
+      <textarea id="pr_conditions_specifiques" rows="4" placeholder="Ex: clause particulière, avantage en nature, clause de mobilité..." style="width:100%;border:1.5px solid #cbd5e1;border-radius:8px;padding:10px;font-size:0.85rem;font-family:inherit;resize:vertical" oninput="PROM.data.conditions_specifiques=this.value">${PROM.data.conditions_specifiques || ''}</textarea>
+    </div>`;
     if (PROM.modifMode) {
       // MODE MODIFICATION : génération gratuite, usage unique
       html += `
@@ -3450,6 +3464,8 @@ function promCollectStep() {
       if (el) PROM.data[f.id] = el.value;
     }
   }
+  const condEl = document.getElementById('pr_conditions_specifiques');
+  if (condEl) PROM.data.conditions_specifiques = condEl.value;
 }
 
 function promNext() {
@@ -3630,6 +3646,8 @@ function promGenerate() {
 
   <h2>Article 5 — Confidentialité</h2>
   <p>Les parties s'engagent à traiter comme strictement confidentielles les informations échangées dans le cadre du présent processus de recrutement.</p>
+
+  ${d.conditions_specifiques ? `<h2>Conditions particulières</h2><p style="white-space:pre-line">${d.conditions_specifiques.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>` : ''}
 
   <div class="signature">
     <div class="sig-block">
