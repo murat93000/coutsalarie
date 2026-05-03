@@ -1383,6 +1383,51 @@ input:focus, select:focus { border-color: var(--blue-500); background: var(--whi
       </div>
     </div>
 
+    <!-- SIGNATURE EMPLOYEUR -->
+    <div style="margin-top:24px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1);">
+      <div style="font-size:0.78rem;font-weight:700;color:var(--blue-900);margin-bottom:4px;">✍️ Signature de l'employeur</div>
+      <div style="font-size:0.72rem; color:#94a3b8; margin-bottom:12px;">Sera apposée automatiquement sur tous vos contrats et promesses générés.</div>
+
+      <div style="display:flex; gap:8px; margin-bottom:10px;">
+        <button type="button" id="sigTabDraw" onclick="profSigTab('draw')" style="flex:1; padding:6px; border-radius:6px; border:none; background:#3b82f6; color:#fff; font-size:13px; cursor:pointer;">✏️ Dessiner</button>
+        <button type="button" id="sigTabUpload" onclick="profSigTab('upload')" style="flex:1; padding:6px; border-radius:6px; border:1px solid #444; background:transparent; color:#ccc; font-size:13px; cursor:pointer;">📁 Importer</button>
+      </div>
+
+      <div id="sigPanelDraw">
+        <canvas id="profSigCanvas" width="600" height="150"
+          style="width:100%; height:150px; background:#fff; border:2px dashed #555; border-radius:8px; cursor:crosshair; touch-action:none; display:block;"></canvas>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+          <span id="profSigStatus" style="font-size:12px; color:#94a3b8;">Signez avec votre souris ou votre doigt</span>
+          <button type="button" onclick="profSigClear()" style="padding:4px 10px; border-radius:5px; border:1px solid #555; background:transparent; color:#ccc; font-size:12px; cursor:pointer;">🗑️ Effacer</button>
+        </div>
+      </div>
+
+      <div id="sigPanelUpload" style="display:none;">
+        <label style="display:block; border:2px dashed #555; border-radius:8px; padding:20px; text-align:center; cursor:pointer; color:#94a3b8; font-size:13px;">
+          📎 Cliquer pour importer une image de signature
+          <input type="file" id="profSigFile" accept="image/*" style="display:none;" onchange="profSigLoadFile(this)">
+        </label>
+        <img id="profSigPreview" style="display:none; max-height:100px; margin-top:10px; border-radius:6px; border:1px solid #444;">
+        <button type="button" id="profSigDelBtn" onclick="profSigDelete()" style="display:none; margin-top:8px; padding:4px 10px; border-radius:5px; border:1px solid #e55; background:transparent; color:#e55; font-size:12px; cursor:pointer;">🗑️ Supprimer la signature</button>
+      </div>
+    </div>
+
+    <!-- CACHET DU MAGASIN -->
+    <div style="margin-top:24px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1);">
+      <div style="font-size:0.78rem;font-weight:700;color:var(--blue-900);margin-bottom:4px;">🔵 Cachet / Tampon du magasin</div>
+      <div style="font-size:0.72rem; color:#94a3b8; margin-bottom:12px;">Sera apposé à côté de votre signature sur les contrats.</div>
+
+      <label style="display:block; border:2px dashed #555; border-radius:8px; padding:20px; text-align:center; cursor:pointer; color:#94a3b8; font-size:13px;">
+        📎 Cliquer pour importer le cachet / tampon (image PNG ou JPG)
+        <input type="file" id="profCachetFile" accept="image/*" style="display:none;" onchange="profCachetLoad(this)">
+      </label>
+      <div id="profCachetPreviewBox" style="display:none; margin-top:10px; text-align:center;">
+        <img id="profCachetPreview" style="max-height:100px; border-radius:6px; border:1px solid #444;">
+        <br>
+        <button type="button" onclick="profCachetDelete()" style="margin-top:8px; padding:4px 10px; border-radius:5px; border:1px solid #e55; background:transparent; color:#e55; font-size:12px; cursor:pointer;">🗑️ Supprimer le cachet</button>
+      </div>
+    </div>
+
     <button class="btn btn-primary" style="margin-bottom:8px" onclick="saveProfile()">💾 Enregistrer le profil</button>
     <button class="btn btn-secondary" style="width:100%" onclick="closeProfileModal()">Fermer</button>
   </div>
@@ -2166,6 +2211,22 @@ function saveProfile() {
     horaire_apmidi:      document.getElementById('prof-horaire-apmidi')?.value || ''
   };
   localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+
+  // Sauvegarder signature
+  if (_profSigMode === 'draw') {
+    const canvas = document.getElementById('profSigCanvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      const hasContent = Array.from(data).some((v, i) => i % 4 !== 3 && v !== 0);
+      if (hasContent) localStorage.setItem('employeurSignature', canvas.toDataURL('image/png'));
+    }
+  } else if (_profSigUploadData) {
+    localStorage.setItem('employeurSignature', _profSigUploadData);
+  }
+  // Sauvegarder cachet
+  if (_profCachetData) localStorage.setItem('employeurCachet', _profCachetData);
+
   const badge = document.getElementById('profile-saved-badge');
   badge.classList.add('show');
   setTimeout(() => badge.classList.remove('show'), 2500);
@@ -2188,6 +2249,14 @@ function openProfileModal() {
   set('prof-horaire-matin', p.horaire_matin);
   set('prof-horaire-apmidi', p.horaire_apmidi);
   document.getElementById('profile-modal').classList.add('open');
+  setTimeout(profSigCanvasInit, 100);
+  // Charger cachet existant
+  const cachet = localStorage.getItem('employeurCachet');
+  if (cachet) {
+    _profCachetData = cachet;
+    const prevEl = document.getElementById('profCachetPreview');
+    if (prevEl) { prevEl.src = cachet; document.getElementById('profCachetPreviewBox').style.display = 'block'; }
+  }
 }
 
 function closeProfileModal(e) {
@@ -3150,23 +3219,7 @@ function wizGenerate() {
 
   <p style="text-align:center;margin-top:28px;font-size:9pt;color:#64748b">Fait en deux exemplaires originaux, à ___________, le <strong>${today}</strong>.</p>
 
-  <table class="sig-tbl">
-    <tr>
-      <td>
-        <div class="sig-ttl">Pour l'employeur</div>
-        <div class="sig-name">${gw('emp_civilite')} ${gw('emp_nom_prenom')}</div>
-        <div style="font-size:9pt;color:#64748b">${gw('emp_fonction')}</div>
-        <div class="sig-line"></div>
-        <div class="sig-note">Signature précédée de la mention manuscrite « Lu et approuvé »</div>
-      </td>
-      <td>
-        <div class="sig-ttl">${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'}</div>
-        <div class="sig-name">${salCivil} ${salPrenom} ${salNom}</div>
-        <div class="sig-line"></div>
-        <div class="sig-note">Signature précédée de la mention manuscrite « Lu et approuvé — Bon pour accord »</div>
-      </td>
-    </tr>
-  </table>
+  ${getSignatureBlock(salPrenom + ' ' + salNom, null)}
 
   <div class="footer">Document généré par CoûtSalarié Pro · Modèle conforme au Code du travail français · ${today}<br>Ce document est fourni à titre d'aide à la rédaction. Pour toute situation complexe, consultez un juriste spécialisé en droit du travail.</div>
 
@@ -3906,23 +3959,7 @@ function promGenerate() {
 
   <p style="text-align:center;margin-top:28px;font-size:9pt;color:#64748b">Fait en deux exemplaires originaux, à ___________, le <strong>${today}</strong>.</p>
 
-  <table class="sig-tbl">
-    <tr>
-      <td>
-        <div class="sig-ttl">Pour l'employeur</div>
-        <div class="sig-name">${d.emp_civilite || ''} ${d.emp_nom_prenom || '___'}</div>
-        <div style="font-size:9pt;color:#64748b">${d.emp_fonction || ''}</div>
-        <div class="sig-line"></div>
-        <div class="sig-note">Signature précédée de la mention manuscrite « Lu et approuvé »</div>
-      </td>
-      <td>
-        <div class="sig-ttl">${salCivil === 'Mme' ? 'La candidate' : 'Le candidat'}</div>
-        <div class="sig-name">${salCivil} ${salNomPrenom}</div>
-        <div class="sig-line"></div>
-        <div class="sig-note">Signature précédée de la mention manuscrite « Lu et approuvé — Bon pour accord »</div>
-      </td>
-    </tr>
-  </table>
+  ${getSignatureBlock(salNomPrenom, null)}
 
   <div class="footer">Document généré par CoûtSalarié Pro · Article L. 1221-5 du Code du travail · ${today}<br>Ce document est fourni à titre d'aide à la rédaction. Pour toute situation complexe, consultez un juriste spécialisé en droit du travail.</div>
 
@@ -5084,6 +5121,150 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ═══════════════════════════════════════════
+// PROFIL : SIGNATURE & CACHET EMPLOYEUR
+// ═══════════════════════════════════════════
+
+let _profSigMode = 'draw';
+let _profSigUploadData = null;
+let _profCachetData = null;
+
+function profSigTab(mode) {
+  _profSigMode = mode;
+  document.getElementById('sigPanelDraw').style.display   = mode === 'draw'   ? '' : 'none';
+  document.getElementById('sigPanelUpload').style.display = mode === 'upload' ? '' : 'none';
+  document.getElementById('sigTabDraw').style.background   = mode === 'draw'   ? '#3b82f6' : 'transparent';
+  document.getElementById('sigTabDraw').style.color        = mode === 'draw'   ? '#fff' : '#ccc';
+  document.getElementById('sigTabDraw').style.border       = mode === 'draw'   ? 'none' : '1px solid #444';
+  document.getElementById('sigTabUpload').style.background = mode === 'upload' ? '#3b82f6' : 'transparent';
+  document.getElementById('sigTabUpload').style.color      = mode === 'upload' ? '#fff' : '#ccc';
+  document.getElementById('sigTabUpload').style.border     = mode === 'upload' ? 'none' : '1px solid #444';
+}
+
+function profSigClear() {
+  const canvas = document.getElementById('profSigCanvas');
+  if (!canvas) return;
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  document.getElementById('profSigStatus').textContent = 'Signez avec votre souris ou votre doigt';
+}
+
+function profSigLoadFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    _profSigUploadData = e.target.result;
+    const preview = document.getElementById('profSigPreview');
+    preview.src = _profSigUploadData;
+    preview.style.display = 'block';
+    document.getElementById('profSigDelBtn').style.display = 'inline-block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function profSigDelete() {
+  _profSigUploadData = null;
+  document.getElementById('profSigPreview').style.display = 'none';
+  document.getElementById('profSigDelBtn').style.display = 'none';
+  document.getElementById('profSigFile').value = '';
+}
+
+function profCachetLoad(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    _profCachetData = e.target.result;
+    const preview = document.getElementById('profCachetPreview');
+    preview.src = _profCachetData;
+    document.getElementById('profCachetPreviewBox').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function profCachetDelete() {
+  _profCachetData = null;
+  localStorage.removeItem('employeurCachet');
+  document.getElementById('profCachetPreviewBox').style.display = 'none';
+  document.getElementById('profCachetFile').value = '';
+}
+
+function profSigCanvasInit() {
+  const canvas = document.getElementById('profSigCanvas');
+  if (!canvas || canvas._sigInit) return;
+  canvas._sigInit = true;
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+
+  function pos(e) {
+    const r = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / r.width;
+    const scaleY = canvas.height / r.height;
+    const src = e.touches ? e.touches[0] : e;
+    return { x: (src.clientX - r.left) * scaleX, y: (src.clientY - r.top) * scaleY };
+  }
+  function start(e) { e.preventDefault(); drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }
+  function move(e)  { e.preventDefault(); if (!drawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = '#1a1a2e'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.stroke(); document.getElementById('profSigStatus').textContent = '✅ Signature dessinée'; }
+  function end()    { drawing = false; }
+
+  canvas.addEventListener('mousedown',  start);
+  canvas.addEventListener('mousemove',  move);
+  canvas.addEventListener('mouseup',    end);
+  canvas.addEventListener('mouseleave', end);
+  canvas.addEventListener('touchstart', start, { passive: false });
+  canvas.addEventListener('touchmove',  move,  { passive: false });
+  canvas.addEventListener('touchend',   end);
+
+  const existing = localStorage.getItem('employeurSignature');
+  if (existing) {
+    const img = new Image();
+    img.onload = () => { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); };
+    img.src = existing;
+    document.getElementById('profSigStatus').textContent = '✅ Signature enregistrée';
+  }
+}
+
+function getSignatureBlock(salarieNom, signatureBase64Candidat) {
+  const sig = localStorage.getItem('employeurSignature');
+  const cachet = localStorage.getItem('employeurCachet');
+  const profile = JSON.parse(localStorage.getItem('spp_profile') || '{}');
+  const empNom = ((profile.emp_prenom || '') + ' ' + (profile.emp_nom || '')).trim();
+  const empFonction = profile.emp_fonction || '';
+  const empSociete = profile.emp_denomination || '';
+
+  const empSigHtml = sig
+    ? `<img src="${sig}" style="display:block;max-height:70px;margin:0 auto 4px;max-width:200px;">`
+    : '<div style="height:70px;"></div>';
+  const cachetHtml = cachet
+    ? `<img src="${cachet}" style="display:block;max-height:55px;margin:0 auto 4px;max-width:150px;">`
+    : '';
+  const salSigHtml = signatureBase64Candidat
+    ? `<img src="${signatureBase64Candidat}" style="display:block;max-height:70px;margin:0 auto 4px;max-width:200px;">`
+    : '<div style="height:70px;"></div>';
+
+  return `
+  <div style="margin-top:50px;padding-top:20px;page-break-inside:avoid;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:30px;">
+      <div style="flex:1;text-align:center;">
+        ${empSigHtml}
+        ${cachetHtml}
+        <div style="border-top:1px solid #333;padding-top:8px;">
+          <div style="font-size:11px;color:#555;">Signature et cachet de l'employeur</div>
+          <div style="font-size:12px;font-weight:600;">${empNom}${empFonction ? ', ' + empFonction : ''}</div>
+          <div style="font-size:11px;color:#555;">${empSociete}</div>
+        </div>
+      </div>
+      <div style="flex:1;text-align:center;">
+        ${salSigHtml}
+        <div style="border-top:1px solid #333;padding-top:8px;">
+          <div style="font-size:11px;color:#555;">Signature du salarié</div>
+          <div style="font-size:12px;font-weight:600;">${salarieNom || ''}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
 }
 
 // ═══════════════════════════════════════════
