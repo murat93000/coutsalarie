@@ -2727,7 +2727,7 @@ function gw(id, fallback) {
 function wizGenerate() {
   const d = WIZ.data;
   const isCDI = d.type === 'cdi';
-  const typeLabel = isCDI ? 'CONTRAT DE TRAVAIL À DURÉE INDÉTERMINÉE' : 'CONTRAT DE TRAVAIL À DURÉE DÉTERMINÉE';
+  const typeLabel = isCDI ? 'Contrat de Travail à Durée Indéterminée' : 'Contrat de Travail à Durée Déterminée';
 
   const salCivil = gw('sal_civilite');
   const salNom = gw('sal_nom');
@@ -2887,106 +2887,239 @@ function wizGenerate() {
   </p>
   ${primes ? `<p>S'ajoutent à ce salaire de base les compléments ou accessoires de salaire suivants : <strong>${primes}</strong>.</p>` : ''}`;
 
-  function salref_lower(s) { return s; }
+  // ─ Article 1 : Nature/durée (CDI) ou Motif/durée (CDD) ─
+  let article1html = '';
+  if (isCDI) {
+    article1html = `<p>Le présent contrat est conclu pour une <strong>durée indéterminée</strong>, à compter du <strong>${dateDebut}</strong>.</p>
+    <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} est recruté${salAdj} en qualité de <strong>${poste}</strong>.</p>`;
+  } else {
+    const dateFin = d.date_fin ? new Date(d.date_fin).toLocaleDateString('fr-FR') : '___________';
+    const termePrecis = !d.cdd_terme_type || d.cdd_terme_type.includes('précis');
+    const motif = gw('motif_recours');
+    const renouvellement = d.cdd_renouvellement || 'Non';
+    let motifDetail = '';
+    if (motif.includes('Remplacement')) {
+      const nomRemp = d.motif_remplacement_nom ? ` de <strong>${d.motif_remplacement_nom}</strong>` : '';
+      const qualifRemp = d.motif_remplacement_qualif ? `, habituellement employé${salAdj} en qualité de <strong>${d.motif_remplacement_qualif}</strong>,` : '';
+      const motifAbsence = d.motif_absence ? ` pendant son absence pour cause de <strong>${d.motif_absence}</strong>` : '';
+      motifDetail = `Remplacement${nomRemp}${qualifRemp}${motifAbsence} (art. L. 1242-2, 1° CT)`;
+    } else if (motif.includes('temporaire')) {
+      motifDetail = `Accroissement temporaire de l'activité (art. L. 1242-2, 2° CT)`;
+    } else if (motif.includes('saisonnier')) {
+      motifDetail = `Emploi à caractère saisonnier (art. L. 1242-2, 3° CT)`;
+    } else if (motif.includes('usage')) {
+      motifDetail = `CDD d'usage (art. L. 1242-2, 3° CT)`;
+    } else { motifDetail = motif; }
+    article1html = `<p><strong>Motif de recours :</strong> ${motifDetail}</p>
+    ${termePrecis
+      ? `<p><strong>Durée :</strong> du <strong>${dateDebut}</strong> au <strong>${dateFin}</strong> (terme précis).</p>`
+      : `<p><strong>Durée minimale :</strong> <strong>${gw('duree_min')}</strong> à compter du <strong>${dateDebut}</strong>, jusqu'au terme de l'événement.</p>`
+    }
+    ${renouvellement !== 'Non' ? `<p>Le contrat pourra être renouvelé <strong>${renouvellement.replace('Oui — ','')}</strong>, par avenant signé avant l'échéance du terme initial, dans les limites légales.</p>` : ''}
+    <p>À l'issue du contrat, sauf embauche en CDI, ${salRef} percevra une <strong>indemnité de fin de contrat égale à 10 %</strong> de la rémunération totale brute (art. L. 1243-8 CT).</p>`;
+  }
+
+  // ─ Article 4 : Période d'essai ─
+  let article4html = '';
+  if (isCDI) {
+    const essai = d.periode_essai;
+    if (!essai || essai === "Sans période d'essai") {
+      article4html = `<p>Aucune période d'essai n'est prévue au présent contrat.</p>`;
+    } else {
+      article4html = `<p>Le présent contrat est soumis à une période d'essai de <strong>${essai}</strong>${d.essai_renouvellement === 'oui' ? `, renouvelable une fois avec l'accord exprès de ${salRef}` : ''}, dans la limite des durées légales (art. L. 1221-19 CT).</p>
+      <p>Durant cette période, chaque partie peut rompre le contrat en respectant les délais de prévenance prévus aux articles L. 1221-25 et L. 1221-26 du Code du travail.</p>`;
+    }
+  } else {
+    const essaiCDD = d.periode_essai_cdd;
+    if (!essaiCDD || essaiCDD === "Sans période d'essai") {
+      article4html = `<p>Aucune période d'essai n'est prévue pour ce contrat.</p>`;
+    } else {
+      article4html = `<p>Une période d'essai de <strong>${essaiCDD}</strong> est prévue, conformément à l'article L. 1242-10 du Code du travail. Il peut y être mis fin dans les conditions légales.</p>`;
+    }
+  }
+
+  // ─ Article 5 : Durée du travail ─
+  let article5html = '';
+  if (isPartiel) {
+    article5html = `<p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} est employé${salAdj} à <strong>temps partiel</strong>, pour une durée hebdomadaire de <strong>${heures} heures</strong>.</p>
+    <p>Des heures complémentaires pourront être effectuées dans la limite du tiers de la durée contractuelle (art. L. 3123-20 CT) ou conformément aux dispositions conventionnelles.</p>
+    ${hasEdt ? `<p>Répartition hebdomadaire :</p><table><tr><th style="width:40%">Jour</th><th>Horaires</th></tr>${jours.map(([j,v])=>`<tr><td><strong>${j}</strong></td><td>${v}</td></tr>`).join('')}</table>${edtNote ? `<p>${edtNote}</p>` : ''}` : ''}`;
+  } else if (isForfaitJ) {
+    article5html = `<p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} relève d'une <strong>convention de forfait annuel en jours</strong> fixée à <strong>___ jours</strong> par an, en application de l'accord collectif applicable.</p>
+    <p>Un entretien annuel est organisé pour évoquer la charge de travail, l'organisation du travail et l'articulation vie personnelle/professionnelle (art. L. 3121-65 CT).</p>`;
+  } else {
+    article5html = `<p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} est employé${salAdj} à <strong>temps complet</strong>, pour une durée hebdomadaire de <strong>${heures} heures</strong>, conformément à l'horaire collectif en vigueur dans l'entreprise.</p>
+    ${hasEdt ? `<p>Répartition indicative :</p><table><tr><th style="width:40%">Jour</th><th>Horaires</th></tr>${jours.map(([j,v])=>`<tr><td><strong>${j}</strong></td><td>${v}</td></tr>`).join('')}</table>${edtNote ? `<p>${edtNote}</p>` : ''}` : ''}
+    <p>Des heures supplémentaires pourront être effectuées à la demande de l'employeur dans les limites légales et conventionnelles.</p>`;
+  }
+
+  // ─ Article 6 : Rémunération ─
+  const article6html = `<p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} percevra un salaire brut mensuel de <strong>${salBrut} €</strong>${tauxH !== '___________' ? ` (taux horaire brut : <strong>${tauxH} €</strong>)` : ''}.</p>
+  <p>La rémunération est versée mensuellement, au plus tard le dernier jour ouvré du mois, par virement bancaire, contre remise d'un bulletin de paie.</p>
+  ${primes ? `<p>Des compléments de salaire sont prévus : <strong>${primes}</strong>.</p>` : ''}`;
+
+  const conditionsParticulieres = d.conditions_specifiques
+    ? `<h2 class="art">Dispositions particulières</h2><p style="white-space:pre-line">${d.conditions_specifiques.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>`
+    : '';
 
   const html = `<!DOCTYPE html><html lang="fr"><head>
   <meta charset="UTF-8">
   <title>${typeLabel} — ${salPrenom} ${salNom}</title>
   <style>
-    @page { margin: 2.5cm 2cm; }
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 30px; color: #111; font-size: 11pt; line-height: 1.8; }
-    .doc-header { text-align: center; margin-bottom: 30px; padding-bottom: 16px; border-bottom: 2px solid #111; }
-    .doc-header h1 { font-size: 14pt; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 6px; }
-    .doc-header .ref { font-size: 9pt; color: #555; }
-    .parties-block { margin: 20px 0; font-size: 10.5pt; }
-    .parties-block .entre { font-weight: bold; text-transform: uppercase; color: #555; font-size: 9pt; letter-spacing: 1px; margin-bottom: 6px; }
-    .separateur { text-align: center; color: #555; margin: 12px 0; font-size: 9pt; }
-    .convenu { font-weight: bold; text-align: center; margin: 20px 0; text-transform: uppercase; font-size: 9pt; letter-spacing: 2px; }
-    h2 { font-size: 10.5pt; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin: 24px 0 10px; }
-    p { margin: 8px 0; text-align: justify; font-size: 10.5pt; }
-    table { border-collapse: collapse; margin: 12px 0; font-size: 10pt; width: 100%; }
-    td, th { border: 1px solid #ccc; padding: 6px 10px; }
-    th { background: #f5f5f5; font-weight: bold; }
-    .signatures { display: flex; justify-content: space-between; margin-top: 60px; page-break-inside: avoid; }
-    .sig-block { width: 44%; }
-    .sig-line { border-bottom: 1px solid #333; margin-bottom: 6px; height: 60px; }
-    .sig-label { font-size: 9pt; color: #555; }
-    .footer-note { font-size: 8pt; color: #aaa; text-align: center; margin-top: 40px; border-top: 1px solid #eee; padding-top: 10px; }
-    .nb { font-size: 9pt; color: #555; font-style: italic; margin: 8px 0; }
-    .lieu-date { text-align: center; margin-top: 30px; font-size: 10pt; }
-    @media print { .no-print { display:none; } body { margin:0; } }
+    @page { margin: 2cm 1.8cm; }
+    *{box-sizing:border-box}
+    body{font-family:Arial,sans-serif;max-width:820px;margin:0 auto;padding:0;color:#1a1a2e;font-size:10.5pt;line-height:1.75}
+    .hdr{background:#0f172a;color:#fff;padding:22px 32px}
+    .hdr-company{font-size:15pt;font-weight:900;margin-bottom:3px}
+    .hdr-type{font-size:10.5pt;font-style:italic;color:#94a3b8}
+    .hdr-ref{font-size:7.5pt;color:#64748b;margin-top:5px}
+    .body{padding:0 32px 32px}
+    .parties{width:100%;border-collapse:collapse;margin:18px 0}
+    .parties td{border:1px solid #cbd5e1;padding:12px 16px;vertical-align:top;width:50%;font-size:10pt}
+    .p-head{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:5px}
+    .p-name{font-size:11.5pt;font-weight:700;color:#0f172a;margin-bottom:3px}
+    .convenu{text-align:center;font-weight:700;font-size:8.5pt;text-transform:uppercase;letter-spacing:2px;margin:22px 0 18px;color:#334155;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:9px}
+    .art{font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:1px;background:#f1f5f9;padding:6px 10px;margin:20px 0 7px;border-left:3px solid #0f172a}
+    p{margin:6px 0;text-align:justify}
+    table{border-collapse:collapse;width:100%;margin:9px 0;font-size:10pt}
+    td,th{border:1px solid #cbd5e1;padding:6px 10px}
+    th{background:#f8fafc;font-weight:700;font-size:8.5pt;text-transform:uppercase;letter-spacing:.5px;color:#64748b}
+    ul{margin:6px 0 6px 20px;font-size:10.5pt}
+    li{margin:3px 0}
+    .sig-tbl{width:100%;border-collapse:collapse;margin-top:36px}
+    .sig-tbl td{border:1px solid #cbd5e1;padding:16px;width:50%;vertical-align:top}
+    .sig-ttl{font-weight:700;font-size:8.5pt;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:7px}
+    .sig-name{font-size:11pt;font-weight:700;margin-bottom:3px}
+    .sig-line{border-bottom:1px solid #333;margin:46px 0 7px}
+    .sig-note{font-size:8pt;color:#64748b;font-style:italic}
+    .footer{font-size:7.5pt;color:#94a3b8;text-align:center;margin-top:28px;border-top:1px solid #e2e8f0;padding-top:9px}
+    @media print{body{max-width:100%}}
   </style></head><body>
 
-  <div class="doc-header">
-    <h1>${typeLabel}</h1>
-    <div class="ref">Établi conformément au Code du travail français</div>
+  <div class="hdr">
+    <div class="hdr-company">${empRef}</div>
+    <div class="hdr-type">${typeLabel}</div>
+    <div class="hdr-ref">Établi conformément au Code du travail français · ${today}</div>
   </div>
 
-  <div class="parties-block">
-    <div class="entre">Entre :</div>
-    <p>La société <strong>« ${empRef} »</strong>, dont le siège social est situé au <strong>${empAdresse}</strong>, immatriculée au Registre du Commerce et des Sociétés sous le numéro SIRET <strong>${empUrssaf}</strong>, représentée par <strong>${empSig}</strong>, ci-après dénommée « l'entreprise »,</p>
-    <div class="separateur">d'une part,</div>
-    <div class="entre">Et :</div>
-    <p><strong>${salCivil} ${salPrenom} ${salNom}</strong>, demeurant <strong>${gw('sal_adresse')}</strong>, ci-après dénommé${salAdj} « ${salRef} »,</p>
-    <div class="separateur">d'autre part,</div>
+  <div class="body">
+
+  <table class="parties">
+    <tr>
+      <td>
+        <div class="p-head">Employeur</div>
+        <div class="p-name">${empRef}</div>
+        <div>${empAdresse}</div>
+        ${empUrssaf !== '___________' ? `<div>SIRET : <strong>${empUrssaf}</strong></div>` : ''}
+        <div>Représentée par : <strong>${empSig}</strong></div>
+      </td>
+      <td>
+        <div class="p-head">${salCivil === 'Mme' ? 'Salariée' : 'Salarié'}</div>
+        <div class="p-name">${salCivil} ${salPrenom} ${salNom}</div>
+        <div>${gw('sal_adresse')}</div>
+      </td>
+    </tr>
+  </table>
+
+  <div class="convenu">Il est convenu et arrêté ce qui suit</div>
+
+  <h2 class="art">Article 1 — ${isCDI ? 'Nature et durée du contrat' : 'Motif de recours et durée'}</h2>
+  ${article1html}
+
+  <h2 class="art">Article 2 — Lieu de travail</h2>
+  <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} exercera ses fonctions au : <strong>${lieu}</strong>.</p>
+  ${deplacements ? `<p>La nature des fonctions implique des déplacements. ${salRef.charAt(0).toUpperCase()+salRef.slice(1)} pourra être amené${salAdj} à exercer ses missions sur d'autres sites, après information préalable.</p>` : ''}
+  <p>Toute modification du lieu de travail fera l'objet d'un avenant ou d'une information préalable selon les modalités légales.</p>
+
+  <h2 class="art">Article 3 — Qualification, poste et classification</h2>
+  <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} est engagé${salAdj} en qualité de <strong>${poste}</strong>${coeff ? `, coefficient hiérarchique <strong>${coeff}</strong>` : ''}${classif ? `, classification <strong>${classif}</strong>` : ''}.</p>
+  <p>La convention collective applicable est : <strong>${cc}</strong>.</p>
+  <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} s'engage à exécuter les tâches liées à sa fonction avec soin et diligence, et pourra être amené${salAdj} à accomplir toute tâche connexe relevant de ses compétences.</p>
+
+  <h2 class="art">Article 4 — Période d'essai</h2>
+  ${article4html}
+
+  <h2 class="art">Article 5 — Durée du travail</h2>
+  ${article5html}
+
+  <h2 class="art">Article 6 — Rémunération</h2>
+  ${article6html}
+
+  <h2 class="art">Article 7 — Congés payés</h2>
+  <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} acquiert des droits à congés payés à raison de <strong>2,5 jours ouvrables par mois</strong> de travail effectif, soit 30 jours ouvrables (5 semaines) par an, conformément aux articles L. 3141-1 et suivants du Code du travail.</p>
+  <p>Les dates de congés sont fixées en accord avec l'employeur dans le respect des dispositions légales et conventionnelles. Une indemnité compensatrice est versée à la rupture du contrat pour tout congé non pris.</p>
+
+  <h2 class="art">Article 8 — Protection sociale et médecine du travail</h2>
+  <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} est affilié${salAdj} aux régimes obligatoires de sécurité sociale et de retraite complémentaire.</p>
+  <p>Caisse de retraite complémentaire : <strong>${caisse}</strong>.</p>
+  ${prevoyance !== '___________' ? `<p>Régime de prévoyance : <strong>${prevoyance}</strong>.</p>` : ''}
+  ${mutuelle ? `<p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} bénéficiera de la mutuelle obligatoire d'entreprise, avec participation de l'employeur, conformément à la loi.</p>` : ''}
+  <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} sera soumis${salAdj} à la visite médicale d'embauche auprès du Service de Santé au Travail compétent, dans les délais réglementaires.</p>
+
+  <h2 class="art">Article 9 — Formation professionnelle</h2>
+  <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} bénéficie d'un accès aux actions de formation professionnelle continue, conformément aux dispositions légales et aux orientations de l'entreprise. ${salPron} alimente son Compte Personnel de Formation (CPF) dans les conditions prévues par la loi.</p>
+  <p>L'entreprise s'engage à assurer l'adaptation de ${salRef} à son poste et à veiller au maintien de sa capacité à occuper un emploi, compte tenu de l'évolution des emplois, des technologies et des organisations.</p>
+
+  <h2 class="art">Article 10 — Obligations de discrétion et de loyauté</h2>
+  <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} s'engage à ne pas divulguer à des tiers, pendant et après l'exécution du contrat, les informations confidentielles dont ${salPronMin} aura eu connaissance dans l'exercice de ses fonctions (informations commerciales, financières, techniques ou organisationnelles).</p>
+  <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} s'engage à une obligation de loyauté vis-à-vis de l'entreprise et à n'exercer aucune activité concurrente durant l'exécution du présent contrat, sauf accord préalable écrit de l'employeur.</p>
+
+  <h2 class="art">Article 11 — Rupture du contrat</h2>
+  ${isCDI
+    ? `<p>Le présent CDI peut être rompu à l'initiative de l'une ou l'autre des parties, sous réserve du respect des procédures légales (démission, licenciement, rupture conventionnelle homologuée, etc.) et des délais de préavis prévus par la convention collective ou la loi.</p>
+      <p>En cas de faute grave ou lourde, le contrat peut être rompu sans indemnité ni préavis, dans les conditions prévues par la jurisprudence.</p>`
+    : `<p>Conformément à l'article L. 1243-1 du Code du travail, le présent CDD ne peut être rompu avant l'échéance du terme qu'en cas : d'accord des parties, de faute grave, de force majeure, ou d'inaptitude constatée par le médecin du travail.</p>
+      <p>Toute rupture anticipée en dehors de ces cas expose son auteur au paiement de dommages et intérêts.</p>`
+  }
+
+  <h2 class="art">Article 12 — Convention collective et droit applicable</h2>
+  <p>Le présent contrat est soumis aux dispositions du Code du travail français ainsi qu'à la convention collective : <strong>${cc}</strong>.</p>
+  <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} reconnaît en avoir pris connaissance. La convention collective est consultable sur www.legifrance.gouv.fr et disponible au sein de l'entreprise.</p>
+  <p>Tout litige relatif à l'exécution ou à la rupture du présent contrat relève de la compétence du Conseil de Prud'hommes territorialement compétent.</p>
+
+  <h2 class="art">Article 13 — Protection des données personnelles (RGPD)</h2>
+  <p>Les données personnelles de ${salRef} sont traitées par l'employeur pour les besoins de l'exécution du contrat et des obligations légales (gestion de la paie, déclarations sociales, registre du personnel), conformément au Règlement (UE) 2016/679 (RGPD) et à la loi Informatique et Libertés.</p>
+  <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} dispose d'un droit d'accès, de rectification et d'effacement de ses données, dans les limites des obligations légales de conservation, en s'adressant au responsable de traitement de l'entreprise.</p>
+
+  <h2 class="art">Article 14 — Documents remis à la signature</h2>
+  <p>Lors de la prise de fonction, les documents suivants sont remis à ${salRef} :</p>
+  <ul>
+    <li>Un exemplaire signé du présent contrat</li>
+    <li>Le règlement intérieur de l'entreprise (le cas échéant)</li>
+    <li>La convention collective applicable ou notice d'information</li>
+    <li>La notice d'information sur la mutuelle et la prévoyance</li>
+    <li>Le document d'information sur le CPF et la formation professionnelle</li>
+  </ul>
+  <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} reconnaît avoir reçu ces documents et s'engage à en prendre connaissance.</p>
+
+  ${conditionsParticulieres}
+
+  <p style="text-align:center;margin-top:28px;font-size:9pt;color:#64748b">Fait en deux exemplaires originaux, à ___________, le <strong>${today}</strong>.</p>
+
+  <table class="sig-tbl">
+    <tr>
+      <td>
+        <div class="sig-ttl">Pour l'employeur</div>
+        <div class="sig-name">${gw('emp_civilite')} ${gw('emp_nom_prenom')}</div>
+        <div style="font-size:9pt;color:#64748b">${gw('emp_fonction')}</div>
+        <div class="sig-line"></div>
+        <div class="sig-note">Signature précédée de la mention manuscrite « Lu et approuvé »</div>
+      </td>
+      <td>
+        <div class="sig-ttl">${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'}</div>
+        <div class="sig-name">${salCivil} ${salPrenom} ${salNom}</div>
+        <div class="sig-line"></div>
+        <div class="sig-note">Signature précédée de la mention manuscrite « Lu et approuvé — Bon pour accord »</div>
+      </td>
+    </tr>
+  </table>
+
+  <div class="footer">Document généré par CoûtSalarié Pro · Modèle conforme au Code du travail français · ${today}<br>Ce document est fourni à titre d'aide à la rédaction. Pour toute situation complexe, consultez un juriste spécialisé en droit du travail.</div>
+
   </div>
-
-  <div class="convenu">Il est convenu ce qui suit :</div>
-
-  <h2>Article 1 — Objet du contrat</h2>
-  <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} est recruté${salAdj} par l'entreprise en qualité de <strong>${poste}</strong> ${coeff} ${classif} de la convention collective <strong>${cc}</strong>.</p>
-
-  ${!isCDI ? articleDuree.split('<h2>Article 4')[0] : ''}
-
-  <h2>Article ${isCDI ? '2' : '3'} — Lieu de travail</h2>
-  ${d.emp_etablissement && d.emp_etablissement !== lieu
-      ? `<p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} exercera ses fonctions au <strong>${lieu}</strong>.</p>`
-      : `<p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} exercera ses fonctions au <strong>${lieu}</strong>.</p>`
-    }
-  ${deplacements ? `<p>En fonction des nécessités de service, ${salRef} pourra être amené${salAdj} à se déplacer.</p>` : ''}
-
-  ${isCDI ? articleDuree : articleDuree.split('<h2>Article 4')[1] ? '<h2>Article 4' + articleDuree.split('<h2>Article 4')[1] : ''}
-
-  <h2>Article ${isCDI ? '5' : '6'} — Durée du travail</h2>
-  ${articleDureeTravail}
-  ${articleEdtHTML}
-
-  ${articleRem}
-
-  <h2>Article ${isCDI ? '7' : '8'} — Congés payés</h2>
-  <p>${salCivil === 'Mme' ? 'La salariée' : 'Le salarié'} bénéficiera de congés payés selon les conditions fixées par les dispositions légales et conventionnelles applicables. À l'issue du présent contrat, les congés payés non pris donneront lieu au versement d'une indemnité compensatrice de congés payés.</p>
-
-  <h2>Article ${isCDI ? '8' : '9'} — Sécurité sociale, retraite et prévoyance</h2>
-  <p>La caisse de retraite complémentaire à laquelle ${salRef} est affilié${salAdj} est <strong>${caisse}</strong>.</p>
-  <p>Par ailleurs, ${salPronMin} bénéficiera du régime de prévoyance souscrit par l'entreprise et géré par <strong>${prevoyance}</strong>.</p>
-  ${mutuelle ? `<p>${salPron} bénéficiera des prestations de la mutuelle obligatoire et collective de l'entreprise.</p>` : ''}
-
-  <h2>Article ${isCDI ? '9' : '10'} — Convention collective</h2>
-  <p>La convention collective applicable à ${salRef} est la suivante : <strong>${cc}</strong>.</p>
-
-  ${d.conditions_specifiques ? `<h2>Dispositions particulières</h2><p style="white-space:pre-line">${d.conditions_specifiques.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>` : ''}
-
-  <div class="lieu-date">Fait à ___________, en deux exemplaires dont un est remis à ${salRef} et l'autre conservé par l'entreprise, le <strong>${today}</strong>.</div>
-
-  <div class="signatures">
-    <div class="sig-block">
-      <p style="font-size:9.5pt;font-weight:bold">Pour l'entreprise :<br>${gw('emp_civilite')} ${gw('emp_nom_prenom')}<br><em>${gw('emp_fonction')}</em></p>
-      <div class="sig-line"></div>
-      <div class="sig-label">Lu et approuvé</div>
-    </div>
-    <div class="sig-block">
-      <p style="font-size:9.5pt;font-weight:bold">${salCivil} ${salPrenom} ${salNom}</p>
-      <div class="sig-line"></div>
-      <div class="sig-label">Lu et approuvé — bon pour accord</div>
-    </div>
-  </div>
-
-  <div class="footer-note">Document généré par CoûtSalarié Pro v4.0 · Modèle basé sur code.travail.gouv.fr · ${today}<br>Ce document est fourni à titre d'aide à la rédaction. Pour toute situation complexe, consultez un juriste spécialisé en droit du travail.</div>
-
   </body></html>`;
 
   openDocViewer(html, 'Contrat ' + ((WIZ.data.type || 'CDI').toUpperCase()) + ' — ' + (WIZ.data.sal_prenom || '') + ' ' + (WIZ.data.sal_nom || ''));
-  // ── Sauvegarder dans l'historique ──
   saveContractToHistory(html, WIZ.data);
   showToast('📄 Contrat généré et sauvegardé !');
 }
@@ -3593,95 +3726,148 @@ function promGenerate() {
   const d = PROM.data;
   const today = new Date().toLocaleDateString('fr-FR');
   const salCivil = d.sal_civilite || 'M.';
-  const salNomPrenom = `${d.sal_prenom || '___'} ${d.sal_nom || '___'}`;
+  const salNom = d.sal_nom || '___';
+  const salPrenom = d.sal_prenom || '___';
+  const salNomPrenom = `${salPrenom} ${salNom}`;
+  const salAdj = salCivil === 'Mme' ? 'e' : '';
+  const candidat = salCivil === 'Mme' ? 'la candidate' : 'le candidat';
+  const Candidat = salCivil === 'Mme' ? 'La candidate' : 'Le candidat';
   const empSig = `${d.emp_civilite || ''} ${d.emp_nom_prenom || '___'}, ${d.emp_fonction || '___'}`;
   const dateDebut = d.date_debut ? new Date(d.date_debut).toLocaleDateString('fr-FR') : '___________';
-  const sal = d.sal_brut ? Number(d.sal_brut).toLocaleString('fr-FR') : '___________';
+  const sal = d.sal_brut ? Number(d.sal_brut).toLocaleString('fr-FR', {minimumFractionDigits:2}) : '___________';
+
+  const conditionsHtml = d.conditions_specifiques
+    ? `<h2 class="art">Article 8 — Conditions particulières</h2>
+      <p style="white-space:pre-line">${d.conditions_specifiques.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>`
+    : '';
 
   const html = `<!DOCTYPE html><html lang="fr"><head>
   <meta charset="UTF-8">
   <title>Promesse d'embauche — ${salNomPrenom}</title>
   <style>
-    body { font-family: Georgia, serif; max-width: 750px; margin: 40px auto; padding: 40px; color: #1a1a2e; font-size: 13px; line-height: 1.7; }
-    h1 { text-align:center; font-size:18px; text-transform:uppercase; letter-spacing:2px; margin-bottom:6px; }
-    .subtitle { text-align:center; font-size:11px; color:#666; margin-bottom:30px; }
-    .header-box { display:flex; justify-content:space-between; margin-bottom:28px; font-size:12px; gap:12px; }
-    .box { border:1px solid #ccc; padding:12px 16px; border-radius:4px; flex:1; }
-    .box h3 { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#666; margin:0 0 6px; }
-    .box p { margin:2px 0; }
-    h2 { font-size:13px; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid #1a1a2e; padding-bottom:4px; margin-top:24px; }
-    table { width:100%; border-collapse:collapse; margin-top:10px; }
-    td { padding:6px 10px; border:1px solid #e2e8f0; font-size:12px; }
-    td:first-child { font-weight:bold; background:#f8fafc; width:40%; }
-    .signature { display:flex; justify-content:space-between; margin-top:50px; gap:20px; }
-    .sig-block { text-align:center; flex:1; }
-    .sig-line { width:180px; border-bottom:1px solid #333; margin:40px auto 6px; }
-    .sig-label { font-size:11px; color:#666; }
-    .footer-doc { text-align:center; font-size:10px; color:#999; margin-top:40px; border-top:1px solid #eee; padding-top:12px; }
-    @media print { body { margin:0; padding:30px; } }
+    @page{margin:2cm 1.8cm}
+    *{box-sizing:border-box}
+    body{font-family:Arial,sans-serif;max-width:820px;margin:0 auto;padding:0;color:#1a1a2e;font-size:10.5pt;line-height:1.75}
+    .hdr{background:#0f172a;color:#fff;padding:22px 32px}
+    .hdr-company{font-size:15pt;font-weight:900;margin-bottom:3px}
+    .hdr-type{font-size:10.5pt;font-style:italic;color:#94a3b8}
+    .hdr-ref{font-size:7.5pt;color:#64748b;margin-top:5px}
+    .body{padding:0 32px 32px}
+    .parties{width:100%;border-collapse:collapse;margin:18px 0}
+    .parties td{border:1px solid #cbd5e1;padding:12px 16px;vertical-align:top;width:50%;font-size:10pt}
+    .p-head{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:5px}
+    .p-name{font-size:11.5pt;font-weight:700;color:#0f172a;margin-bottom:3px}
+    .convenu{text-align:center;font-weight:700;font-size:8.5pt;text-transform:uppercase;letter-spacing:2px;margin:22px 0 18px;color:#334155;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:9px}
+    .art{font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:1px;background:#f1f5f9;padding:6px 10px;margin:20px 0 7px;border-left:3px solid #0f172a}
+    p{margin:6px 0;text-align:justify}
+    ul{margin:6px 0 6px 20px;font-size:10.5pt}
+    li{margin:3px 0}
+    .sig-tbl{width:100%;border-collapse:collapse;margin-top:36px}
+    .sig-tbl td{border:1px solid #cbd5e1;padding:16px;width:50%;vertical-align:top}
+    .sig-ttl{font-weight:700;font-size:8.5pt;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:7px}
+    .sig-name{font-size:11pt;font-weight:700;margin-bottom:3px}
+    .sig-line{border-bottom:1px solid #333;margin:46px 0 7px}
+    .sig-note{font-size:8pt;color:#64748b;font-style:italic}
+    .footer{font-size:7.5pt;color:#94a3b8;text-align:center;margin-top:28px;border-top:1px solid #e2e8f0;padding-top:9px}
+    @media print{body{max-width:100%}}
   </style></head><body>
-  <h1>Promesse d'Embauche</h1>
-  <p class="subtitle">Article L.1221-5 et suivants du Code du travail — Document à valeur contractuelle</p>
 
-  <div class="header-box">
-    <div class="box">
-      <h3>Employeur</h3>
-      <p><strong>${d.emp_denomination || '___'}</strong></p>
-      ${d.emp_urssaf ? `<p>SIRET : ${d.emp_urssaf}</p>` : ''}
-      <p>${d.emp_adresse || '___'}</p>
-      <p>Représentée par : ${empSig}</p>
-    </div>
-    <div class="box">
-      <h3>Candidat(e)</h3>
-      <p><strong>${salCivil} ${salNomPrenom}</strong></p>
-      ${d.sal_adresse ? `<p>${d.sal_adresse}</p>` : ''}
-    </div>
+  <div class="hdr">
+    <div class="hdr-company">${d.emp_denomination || '___'}</div>
+    <div class="hdr-type">Promesse d'embauche — Article L. 1221-5 du Code du travail</div>
+    <div class="hdr-ref">Document à valeur contractuelle · ${today}</div>
   </div>
 
-  <h2>Article 1 — Objet de la promesse</h2>
-  <p>La société <strong>${d.emp_denomination || '___'}</strong>, représentée par <strong>${empSig}</strong>, s'engage formellement à employer <strong>${salCivil} ${salNomPrenom}</strong> aux conditions suivantes :</p>
-  <table>
-    <tr><td>Poste proposé</td><td><strong>${d.poste_fonction || '___'}</strong></td></tr>
-    <tr><td>Nature du contrat</td><td>${d.poste_type || 'CDI'}</td></tr>
-    <tr><td>Date de prise de poste</td><td>${dateDebut}</td></tr>
-    <tr><td>Durée hebdomadaire de travail</td><td>${d.heures_hebdo || '35'} heures</td></tr>
-    <tr><td>Salaire brut mensuel</td><td><strong>${sal} €</strong></td></tr>
-    ${d.poste_lieu ? `<tr><td>Lieu de travail</td><td>${d.poste_lieu}</td></tr>` : ''}
+  <div class="body">
+
+  <table class="parties">
+    <tr>
+      <td>
+        <div class="p-head">Employeur</div>
+        <div class="p-name">${d.emp_denomination || '___'}</div>
+        ${d.emp_adresse ? `<div>${d.emp_adresse}</div>` : ''}
+        ${d.emp_urssaf ? `<div>SIRET : <strong>${d.emp_urssaf}</strong></div>` : ''}
+        <div>Représentée par : <strong>${empSig}</strong></div>
+      </td>
+      <td>
+        <div class="p-head">Candidat(e)</div>
+        <div class="p-name">${salCivil} ${salNomPrenom}</div>
+        ${d.sal_adresse ? `<div>${d.sal_adresse}</div>` : ''}
+      </td>
+    </tr>
   </table>
 
-  <h2>Article 2 — Conditions suspensives</h2>
-  <p>La présente promesse est consentie sous réserve de la présentation, avant la date de prise de poste, des documents légaux suivants : titre de séjour en cours de validité (si nécessaire), aptitude médicale délivrée par la médecine du travail, et le cas échéant, casier judiciaire vierge si le poste l'exige. ${salCivil === 'Mme' ? 'La candidate' : 'Le candidat'} s'engage à informer l'entreprise de toute modification substantielle de sa situation dans les 48 heures.</p>
+  <div class="convenu">La société ${d.emp_denomination || '___'} s'engage à embaucher ${salCivil} ${salNomPrenom} aux conditions suivantes</div>
 
-  <h2>Article 3 — Force obligatoire de la promesse</h2>
-  <p>Conformément à la jurisprudence de la Chambre sociale de la Cour de cassation (arrêt du 21 septembre 2017, n° 16-20.103), la présente promesse unilatérale d'embauche vaut contrat de travail. La rétractation de l'offre par l'employeur pendant le délai d'option n'empêche pas la formation du contrat et engage sa responsabilité contractuelle.</p>
+  <h2 class="art">Article 1 — Poste proposé et nature du contrat</h2>
+  <p>${Candidat} est recruté${salAdj} en qualité de <strong>${d.poste_fonction || '___'}</strong>, dans le cadre d'un contrat de travail à <strong>${d.poste_type || 'durée indéterminée (CDI)'}</strong>.</p>
+  ${d.poste_cc ? `<p>Convention collective applicable : <strong>${d.poste_cc}</strong>.</p>` : ''}
+  ${d.poste_classif || d.poste_coeff ? `<p>Classification / Coefficient : <strong>${d.poste_classif || d.poste_coeff}</strong>.</p>` : ''}
 
-  <h2>Article 4 — Délai d'option</h2>
-  <p>${salCivil === 'Mme' ? 'La candidate' : 'Le candidat'} dispose d'un délai de <strong>${d.delai_option || '5 jours ouvrés'}</strong> à compter de la réception du présent document pour faire connaître sa décision par écrit (courrier recommandé avec AR ou email avec accusé de réception) à l'attention de ${empSig}.</p>
-  <p>Passé ce délai sans réponse, la présente promesse sera considérée comme caduque.</p>
+  <h2 class="art">Article 2 — Date de prise de fonction et période d'essai</h2>
+  <p>La prise de fonction est prévue le <strong>${dateDebut}</strong>.</p>
+  ${d.periode_essai && d.periode_essai !== "Sans période d'essai"
+    ? `<p>Le contrat comprendra une période d'essai de <strong>${d.periode_essai}</strong>, renouvelable dans les conditions légales et conventionnelles.</p>`
+    : `<p>Aucune période d'essai n'est prévue.</p>`
+  }
 
-  <h2>Article 5 — Confidentialité</h2>
-  <p>Les parties s'engagent à traiter comme strictement confidentielles les informations échangées dans le cadre du présent processus de recrutement.</p>
+  <h2 class="art">Article 3 — Lieu de travail</h2>
+  <p>${Candidat} exercera ses fonctions au : <strong>${d.poste_lieu || '___'}</strong>.</p>
+  <p>Toute modification du lieu de travail fera l'objet d'une information préalable et, selon les cas, d'un avenant au contrat.</p>
 
-  ${d.conditions_specifiques ? `<h2>Conditions particulières</h2><p style="white-space:pre-line">${d.conditions_specifiques.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>` : ''}
+  <h2 class="art">Article 4 — Durée du travail</h2>
+  <p>La durée hebdomadaire de travail est fixée à <strong>${d.heures_hebdo || '35'} heures</strong>.</p>
+  <p>L'organisation du temps de travail sera précisée dans le contrat définitif, en conformité avec les dispositions légales et conventionnelles applicables.</p>
 
-  <div class="signature">
-    <div class="sig-block">
-      <div class="sig-line"></div>
-      <p class="sig-label">Pour l'employeur<br><em>${empSig}</em><br>Signature précédée de la mention « Lu et approuvé »</p>
-    </div>
-    <div class="sig-block">
-      <div class="sig-line"></div>
-      <p class="sig-label">${salCivil === 'Mme' ? 'La candidate' : 'Le candidat'}<br><em>${salCivil} ${salNomPrenom}</em><br>Signature précédée de la mention « Lu et approuvé »</p>
-    </div>
+  <h2 class="art">Article 5 — Rémunération</h2>
+  <p>La rémunération mensuelle brute est fixée à <strong>${sal} €</strong>.</p>
+  <p>Elle sera versée mensuellement, au plus tard le dernier jour ouvré du mois, par virement bancaire, contre remise d'un bulletin de paie.</p>
+
+  <h2 class="art">Article 6 — Avantages et protection sociale</h2>
+  <p>${Candidat} bénéficiera des avantages suivants :</p>
+  <ul>
+    <li>30 jours ouvrables de congés payés par an (2,5 jours/mois de travail effectif)</li>
+    <li>Affiliation aux régimes de sécurité sociale et de retraite complémentaire obligatoires</li>
+    <li>Accès au Compte Personnel de Formation (CPF)</li>
+    <li>Visite médicale d'embauche auprès du Service de Santé au Travail</li>
+    ${d.mutuelle === 'Oui' ? `<li>Mutuelle d'entreprise obligatoire avec participation employeur</li>` : ''}
+    ${d.prevoyance ? `<li>Régime de prévoyance : ${d.prevoyance}</li>` : ''}
+  </ul>
+
+  <h2 class="art">Article 7 — Validité de la promesse et délai de réponse</h2>
+  <p>Conformément à la jurisprudence de la Cour de cassation (Ch. soc., 21 septembre 2017, n° 16-20.103), la présente promesse unilatérale d'embauche vaut contrat de travail dès l'expression du consentement du bénéficiaire.</p>
+  <p>${Candidat} dispose d'un délai de <strong>${d.delai_option || '5 jours ouvrés'}</strong> à compter de la réception du présent document pour faire connaître sa décision par écrit (courrier recommandé avec AR ou email avec accusé de réception) à l'attention de : ${empSig}.</p>
+  <p>Passé ce délai sans réponse écrite, la présente promesse sera considérée comme caduque. La rétractation par l'employeur pendant le délai d'option n'empêche pas la formation du contrat et engage sa responsabilité contractuelle.</p>
+  <p>La présente promesse est consentie sous réserve de la présentation des documents légaux requis avant la date de prise de poste (aptitude médicale, titre de séjour si nécessaire, etc.). ${Candidat} s'engage à informer l'entreprise de toute modification substantielle de sa situation dans les 48 heures.</p>
+
+  ${conditionsHtml}
+
+  <p style="text-align:center;margin-top:28px;font-size:9pt;color:#64748b">Fait en deux exemplaires originaux, à ___________, le <strong>${today}</strong>.</p>
+
+  <table class="sig-tbl">
+    <tr>
+      <td>
+        <div class="sig-ttl">Pour l'employeur</div>
+        <div class="sig-name">${d.emp_civilite || ''} ${d.emp_nom_prenom || '___'}</div>
+        <div style="font-size:9pt;color:#64748b">${d.emp_fonction || ''}</div>
+        <div class="sig-line"></div>
+        <div class="sig-note">Signature précédée de la mention manuscrite « Lu et approuvé »</div>
+      </td>
+      <td>
+        <div class="sig-ttl">${salCivil === 'Mme' ? 'La candidate' : 'Le candidat'}</div>
+        <div class="sig-name">${salCivil} ${salNomPrenom}</div>
+        <div class="sig-line"></div>
+        <div class="sig-note">Signature précédée de la mention manuscrite « Lu et approuvé — Bon pour accord »</div>
+      </td>
+    </tr>
+  </table>
+
+  <div class="footer">Document généré par CoûtSalarié Pro · Article L. 1221-5 du Code du travail · ${today}<br>Ce document est fourni à titre d'aide à la rédaction. Pour toute situation complexe, consultez un juriste spécialisé en droit du travail.</div>
+
   </div>
-
-  <p class="footer-doc">Fait en deux exemplaires originaux — ${today} — Document généré par CoûtSalarié Pro<br>
-  Ce document est fourni à titre d'aide à la rédaction. Pour toute situation complexe, consultez un juriste spécialisé en droit du travail.</p>
   </body></html>`;
 
   openDocViewer(html, "Promesse d'embauche — " + (d.sal_prenom || '') + ' ' + (d.sal_nom || ''));
-
-  // Sauvegarder dans l'historique
   savePromesseToHistory(html, d);
   showToast('✉️ Promesse générée et sauvegardée !');
 }
