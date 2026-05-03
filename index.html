@@ -978,6 +978,25 @@ input:focus, select:focus { border-color: var(--blue-500); background: var(--whi
   to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
 }
 
+/* ── SIGNATURE ÉLECTRONIQUE ── */
+.sign-modal-overlay { display:none; position:fixed; inset:0; background:rgba(15,23,42,0.7); z-index:10000; align-items:center; justify-content:center; padding:16px; box-sizing:border-box; }
+.sign-modal-overlay.open { display:flex; }
+.sign-modal { background:white; border-radius:20px; width:100%; max-width:440px; padding:24px; max-height:90vh; overflow-y:auto; box-sizing:border-box; }
+.sign-modal-title { font-size:1rem; font-weight:800; color:#0f172a; margin-bottom:4px; }
+.sign-modal-sub { font-size:0.72rem; color:#64748b; margin-bottom:18px; }
+.sign-badge-signed { display:inline-flex; align-items:center; gap:4px; background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; border-radius:20px; padding:3px 10px; font-size:0.68rem; font-weight:800; white-space:nowrap; }
+.sign-badge-pending { display:inline-flex; align-items:center; gap:4px; background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; border-radius:20px; padding:3px 10px; font-size:0.68rem; font-weight:800; white-space:nowrap; }
+#sign-page { display:none; position:fixed; inset:0; z-index:99998; background:#f8fafc; overflow-y:auto; font-family:'DM Sans',sans-serif; }
+#sign-page.active { display:block; }
+.sign-page-header { background:#0f172a; padding:14px 16px; display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:1; }
+.sign-page-body { max-width:800px; margin:0 auto; padding:16px; }
+.sign-contract-iframe { width:100%; height:420px; border:none; border-radius:10px; display:block; }
+.sign-contract-wrap { background:white; border-radius:14px; overflow:hidden; margin-bottom:20px; box-shadow:0 2px 12px rgba(0,0,0,0.08); }
+.sign-canvas-wrap { background:white; border-radius:14px; padding:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); margin-bottom:16px; }
+#sign-canvas { width:100%; height:200px; border:2px dashed #cbd5e1; border-radius:10px; touch-action:none; cursor:crosshair; display:block; background:white; }
+.sign-confirm-screen { display:none; text-align:center; padding:40px 20px; background:white; border-radius:14px; box-shadow:0 2px 12px rgba(0,0,0,0.08); }
+.sign-confirm-screen.active { display:block; }
+
 </style>
 </head>
 <body>
@@ -3382,6 +3401,12 @@ function renderContracts() {
   list.innerHTML = contracts.map(c => {
     const typeLabel = (c.type || 'cdi').toUpperCase();
     const isCDD = c.type === 'cdd';
+    const signReq = getContractSigningRequest(c.id);
+    const signBadge = signReq
+      ? (signReq.status === 'signed'
+          ? `<span class="sign-badge-signed">✅ Signé le ${new Date(signReq.signedAt).toLocaleDateString('fr-FR')}</span>`
+          : `<span class="sign-badge-pending">⏳ En attente de signature</span>`)
+      : '';
     return `
     <div class="contract-hist-item">
       <div class="contract-hist-header">
@@ -3389,12 +3414,14 @@ function renderContracts() {
           <span class="contract-hist-type ${isCDD ? 'cdd' : ''}">📋 ${typeLabel}</span>
           <div class="contract-hist-name">${c.salarie || '—'}</div>
           <div class="contract-hist-meta">${c.poste || '—'} · ${c.societe || '—'}</div>
+          ${signBadge ? `<div style="margin-top:5px">${signBadge}</div>` : ''}
         </div>
         <div class="contract-hist-date">${c.date}<br>${c.time}</div>
       </div>
       <div class="contract-hist-actions">
         <button class="btn-hist-view" onclick="viewContract(${c.id})">👁 Consulter</button>
         <button class="btn-hist-mail" onclick="shareContractByMail(${c.id})">✉️ Partager</button>
+        <button class="btn-hist-view" style="background:#ede9fe;color:#5b21b6;border-color:#c4b5fd" onclick="openSignModal(${c.id})">✍️ Signature</button>
         <button class="btn-hist-view"
           style="${(()=>{ const dH=parseInt(loadConfig().delai_modif_heures??24); const used=(c.modifCount||0)>=1; const exp=dH>0&&c.createdAt&&((Date.now()-c.createdAt)/3600000)>dH; return (used||exp)?'background:#e2e8f0;color:#94a3b8;border-color:#cbd5e1;cursor:not-allowed':'background:#fef3c7;color:#92400e;border-color:#f59e0b'; })()}"
           onclick="editContractFromHistory(${c.id})">
@@ -5062,11 +5089,266 @@ function showToast(msg) {
 // ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+// SIGNATURE ÉLECTRONIQUE
+// ═══════════════════════════════════════════
+
+let _signCurrentContractId = null;
+let _signCurrentRequestId = null;
+let _signUrl = '';
+let _signDrawing = false;
+let _signCtx = null;
+
+function getSigningRequest(id) {
+  try { return JSON.parse(localStorage.getItem('signing_' + id) || 'null'); } catch { return null; }
+}
+
+function getContractSigningRequest(contractId) {
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('signing_')) {
+      try {
+        const req = JSON.parse(localStorage.getItem(key));
+        if (req && req.contractId === contractId) return req;
+      } catch {}
+    }
+  }
+  return null;
+}
+
+function openSignModal(contractId) {
+  _signCurrentContractId = contractId;
+  document.getElementById('sign-modal-form').style.display = 'block';
+  document.getElementById('sign-modal-link').style.display = 'none';
+  const contracts = loadContracts();
+  const c = contracts.find(x => x.id === contractId);
+  if (c) {
+    document.getElementById('sign-candidat-nom').value = c.salarie || '';
+    document.getElementById('sign-candidat-email').value = (c.data && c.data.client_email) || '';
+  }
+  document.getElementById('sign-modal-overlay').classList.add('open');
+}
+
+function closeSignModal() {
+  document.getElementById('sign-modal-overlay').classList.remove('open');
+}
+
+function sendSignLink() {
+  const nom = document.getElementById('sign-candidat-nom').value.trim();
+  const email = document.getElementById('sign-candidat-email').value.trim();
+  if (!nom) { showToast('Veuillez saisir le nom du candidat'); return; }
+  const contracts = loadContracts();
+  const c = contracts.find(x => x.id === _signCurrentContractId);
+  if (!c) { showToast('Contrat introuvable'); return; }
+  const profile = loadProfile();
+  const req = {
+    id: Date.now().toString(36),
+    contractKey: CONTRACTS_KEY,
+    contractId: _signCurrentContractId,
+    candidatEmail: email,
+    candidatNom: nom,
+    status: 'pending',
+    createdAt: new Date().toISOString(),
+    employeurNom: profile.emp_denomination || c.societe || ''
+  };
+  localStorage.setItem('signing_' + req.id, JSON.stringify(req));
+  _signCurrentRequestId = req.id;
+  _signUrl = window.location.origin + window.location.pathname + '?sign=' + req.id;
+  document.getElementById('sign-link-display').textContent = _signUrl;
+  document.getElementById('sign-modal-form').style.display = 'none';
+  document.getElementById('sign-modal-link').style.display = 'block';
+  renderContracts();
+}
+
+function copySignLink() {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(_signUrl).then(() => showToast('✅ Lien copié !')).catch(() => showToast('Copiez : ' + _signUrl, 5000));
+  } else {
+    showToast('Copiez manuellement : ' + _signUrl, 6000);
+  }
+}
+
+function emailSignLink() {
+  const contracts = loadContracts();
+  const c = contracts.find(x => x.id === _signCurrentContractId);
+  const nom = document.getElementById('sign-candidat-nom').value.trim();
+  const email = document.getElementById('sign-candidat-email').value.trim();
+  const typeLabel = c ? (c.type || 'CDI').toUpperCase() : 'CDI';
+  const subject = encodeURIComponent('Votre contrat de travail ' + typeLabel + ' à signer');
+  const body = encodeURIComponent(
+    'Bonjour ' + nom + ',\n\n' +
+    'Veuillez trouver ci-dessous le lien pour signer votre contrat de travail ' + typeLabel + ' :\n\n' +
+    _signUrl + '\n\n' +
+    'Cliquez sur ce lien depuis votre téléphone ou ordinateur, lisez attentivement le contrat, puis signez directement à l\'écran.\n\n' +
+    'Cordialement,\n' + (c ? (c.societe || '') : '')
+  );
+  window.location.href = 'mailto:' + encodeURIComponent(email) + '?subject=' + subject + '&body=' + body;
+}
+
+// ── Page de signature (côté candidat) ──
+
+function checkSigningPage() {
+  const params = new URLSearchParams(window.location.search);
+  const signId = params.get('sign');
+  if (!signId) return false;
+  const req = getSigningRequest(signId);
+  if (!req) {
+    document.body.style.cssText = 'margin:0;padding:0;font-family:"DM Sans",sans-serif;background:#f8fafc';
+    document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:20px"><div><div style="font-size:3rem;margin-bottom:16px">❌</div><div style="font-size:1rem;font-weight:700;color:#0f172a">Lien de signature invalide ou expiré.</div></div></div>`;
+    return true;
+  }
+  if (req.status === 'signed') {
+    _showSigningPageLayout(req, null, true);
+    return true;
+  }
+  const contracts = JSON.parse(localStorage.getItem(req.contractKey) || '[]');
+  const c = contracts.find(x => x.id === req.contractId);
+  _showSigningPageLayout(req, c ? c.html : null, false);
+  return true;
+}
+
+function _showSigningPageLayout(req, contractHtml, alreadySigned) {
+  document.querySelector('.tabs') && (document.querySelector('.tabs').style.display = 'none');
+  document.querySelector('header') && (document.querySelector('header').style.display = 'none');
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  const page = document.getElementById('sign-page');
+  page.classList.add('active');
+  page.dataset.signReqId = req.id;
+  document.getElementById('sign-page-subtitle').textContent = alreadySigned ? 'Contrat signé ✅' : 'Contrat de travail à signer';
+  document.getElementById('sign-page-parties').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+      <div><div style="font-size:0.7rem;color:#64748b;margin-bottom:2px">Candidat</div><div style="font-size:0.92rem;font-weight:800;color:#0f172a">${req.candidatNom}</div></div>
+      <div><div style="font-size:0.7rem;color:#64748b;margin-bottom:2px">Employeur</div><div style="font-size:0.85rem;font-weight:700;color:#334155">${req.employeurNom || '—'}</div></div>
+    </div>`;
+  if (contractHtml) {
+    const iframe = document.getElementById('sign-contract-iframe');
+    iframe.contentDocument.open();
+    iframe.contentDocument.write(contractHtml);
+    iframe.contentDocument.close();
+  } else {
+    document.querySelector('.sign-contract-wrap').innerHTML = '<p style="padding:20px;color:#94a3b8;text-align:center;font-size:0.82rem">Contrat non disponible sur cet appareil. Demandez à votre employeur de vous envoyer une copie séparément.</p>';
+  }
+  if (alreadySigned) {
+    document.getElementById('sign-canvas-section').style.display = 'none';
+    const confirm = document.getElementById('sign-confirm-screen');
+    confirm.classList.add('active');
+    document.getElementById('sign-confirm-details').innerHTML = `
+      Signé par <strong>${req.candidatNom}</strong><br>
+      Employeur : <strong>${req.employeurNom}</strong><br>
+      Date : <strong>${new Date(req.signedAt).toLocaleDateString('fr-FR')} à ${new Date(req.signedAt).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'})}</strong>`;
+  } else {
+    setTimeout(() => _initSignCanvas(), 150);
+  }
+}
+
+function _initSignCanvas() {
+  const canvas = document.getElementById('sign-canvas');
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth || 300;
+  canvas.height = 200;
+  _signCtx = canvas.getContext('2d');
+  _signCtx.fillStyle = 'white';
+  _signCtx.fillRect(0, 0, canvas.width, canvas.height);
+  _signCtx.strokeStyle = '#0f172a';
+  _signCtx.lineWidth = 2.5;
+  _signCtx.lineCap = 'round';
+  _signCtx.lineJoin = 'round';
+
+  function getPos(e) {
+    const r = canvas.getBoundingClientRect();
+    const sx = canvas.width / r.width;
+    const sy = canvas.height / r.height;
+    if (e.touches) return { x: (e.touches[0].clientX - r.left) * sx, y: (e.touches[0].clientY - r.top) * sy };
+    return { x: (e.clientX - r.left) * sx, y: (e.clientY - r.top) * sy };
+  }
+
+  canvas.addEventListener('mousedown',  e => { _signDrawing = true; const p = getPos(e); _signCtx.beginPath(); _signCtx.moveTo(p.x, p.y); });
+  canvas.addEventListener('mousemove',  e => { if (!_signDrawing) return; const p = getPos(e); _signCtx.lineTo(p.x, p.y); _signCtx.stroke(); });
+  canvas.addEventListener('mouseup',    () => { _signDrawing = false; });
+  canvas.addEventListener('mouseleave', () => { _signDrawing = false; });
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); _signDrawing = true; const p = getPos(e); _signCtx.beginPath(); _signCtx.moveTo(p.x, p.y); }, { passive: false });
+  canvas.addEventListener('touchmove',  e => { e.preventDefault(); if (!_signDrawing) return; const p = getPos(e); _signCtx.lineTo(p.x, p.y); _signCtx.stroke(); }, { passive: false });
+  canvas.addEventListener('touchend',   () => { _signDrawing = false; });
+}
+
+function clearSignCanvas() {
+  const canvas = document.getElementById('sign-canvas');
+  if (_signCtx && canvas) { _signCtx.fillStyle = 'white'; _signCtx.fillRect(0, 0, canvas.width, canvas.height); }
+}
+
+function _isCanvasEmpty() {
+  const canvas = document.getElementById('sign-canvas');
+  if (!canvas || !_signCtx) return true;
+  const data = _signCtx.getImageData(0, 0, canvas.width, canvas.height).data;
+  let nonWhite = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i] < 250 || data[i + 1] < 250 || data[i + 2] < 250) { if (++nonWhite > 100) return false; }
+  }
+  return true;
+}
+
+function validateSignature() {
+  if (_isCanvasEmpty()) { showToast('⚠️ Veuillez signer dans le cadre avant de valider', 3000); return; }
+  const canvas = document.getElementById('sign-canvas');
+  const signatureBase64 = canvas.toDataURL('image/png');
+  const page = document.getElementById('sign-page');
+  const reqId = page.dataset.signReqId;
+  const req = getSigningRequest(reqId);
+  if (!req) { showToast('Erreur : requête introuvable'); return; }
+  req.status = 'signed';
+  req.signedAt = new Date().toISOString();
+  req.signatureBase64 = signatureBase64;
+  const finalize = () => {
+    localStorage.setItem('signing_' + reqId, JSON.stringify(req));
+    _appendSignatureToContract(req);
+    _showSignedConfirmation(req);
+  };
+  fetch('https://api.ipify.org?format=json')
+    .then(r => r.json())
+    .then(d => { req.candidatIP = d.ip; })
+    .catch(() => { req.candidatIP = 'inconnu'; })
+    .finally(finalize);
+}
+
+function _appendSignatureToContract(req) {
+  const contracts = JSON.parse(localStorage.getItem(req.contractKey) || '[]');
+  const idx = contracts.findIndex(c => c.id === req.contractId);
+  if (idx < 0) return;
+  const d = new Date(req.signedAt);
+  const signBlock = `<div style="page-break-inside:avoid;margin-top:40px;border-top:2px solid #0f172a;padding-top:20px;font-family:Arial,sans-serif">
+    <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">Signature électronique</div>
+    <table style="width:100%;font-size:11px;color:#334155;border-collapse:collapse">
+      <tr><td style="padding:3px 0;width:50%"><b>Signataire :</b> ${req.candidatNom}</td><td style="padding:3px 0"><b>Employeur :</b> ${req.employeurNom}</td></tr>
+      <tr><td style="padding:3px 0"><b>Date :</b> ${d.toLocaleDateString('fr-FR')}</td><td style="padding:3px 0"><b>Heure :</b> ${d.toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'})}</td></tr>
+      <tr><td colspan="2" style="padding:3px 0"><b>IP :</b> ${req.candidatIP || 'inconnu'}</td></tr>
+    </table>
+    <div style="margin-top:10px"><b style="font-size:11px">Signature :</b><br><img src="${req.signatureBase64}" style="max-width:280px;height:90px;border:1px solid #e2e8f0;border-radius:6px;margin-top:6px;display:block"></div>
+    <div style="margin-top:8px;font-size:9px;color:#94a3b8">Signé électroniquement via CoûtSalarié Pro</div>
+  </div>`;
+  contracts[idx].html += signBlock;
+  contracts[idx].signedAt = req.signedAt;
+  localStorage.setItem(req.contractKey, JSON.stringify(contracts));
+}
+
+function _showSignedConfirmation(req) {
+  document.getElementById('sign-canvas-section').style.display = 'none';
+  const d = new Date(req.signedAt);
+  const confirm = document.getElementById('sign-confirm-screen');
+  confirm.classList.add('active');
+  document.getElementById('sign-confirm-details').innerHTML = `
+    Signé par <strong>${req.candidatNom}</strong><br>
+    Employeur : <strong>${req.employeurNom}</strong><br>
+    Date : <strong>${d.toLocaleDateString('fr-FR')} à ${d.toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'})}</strong>
+    ${req.candidatIP ? '<br>IP : ' + req.candidatIP : ''}`;
+}
+
 window.onload = () => {
   // Nettoyer l'ancienne clé de dismiss (format '1') → force réaffichage une fois
   if (localStorage.getItem('spp_onboarding_dismissed') === '1') {
     localStorage.removeItem('spp_onboarding_dismissed');
   }
+  // ── Page de signature électronique ──
+  if (checkSigningPage()) return;
   applyConfig();
   showOnboarding();
   // ── Récupération après retour Stripe ──
@@ -5087,6 +5369,64 @@ window.onload = () => {
   }
 };
 </script>
+
+<!-- ════════════════ MODAL SIGNATURE ════════════════ -->
+<div id="sign-modal-overlay" class="sign-modal-overlay" onclick="if(event.target===this)closeSignModal()">
+  <div class="sign-modal">
+    <div class="sign-modal-title">✍️ Envoyer pour signature</div>
+    <div class="sign-modal-sub">Le candidat recevra un lien pour signer le contrat depuis son téléphone</div>
+    <div id="sign-modal-form">
+      <div style="margin-bottom:12px">
+        <label style="font-size:0.7rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px">Nom du candidat *</label>
+        <input id="sign-candidat-nom" type="text" placeholder="Marie Durand" style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:0.82rem;font-family:'DM Sans',sans-serif;box-sizing:border-box;outline:none">
+      </div>
+      <div style="margin-bottom:18px">
+        <label style="font-size:0.7rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px">Email du candidat</label>
+        <input id="sign-candidat-email" type="email" placeholder="marie.durand@email.com" style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:0.82rem;font-family:'DM Sans',sans-serif;box-sizing:border-box;outline:none">
+      </div>
+      <button onclick="sendSignLink()" style="width:100%;padding:13px;background:#0f172a;color:white;border:none;border-radius:10px;font-weight:800;font-size:0.88rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px">🔗 Générer le lien de signature</button>
+      <button onclick="closeSignModal()" style="width:100%;padding:10px;background:transparent;color:#64748b;border:none;font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif">Annuler</button>
+    </div>
+    <div id="sign-modal-link" style="display:none">
+      <div style="background:#f1f5f9;border-radius:10px;padding:12px;margin-bottom:14px;word-break:break-all;font-size:0.75rem;color:#334155;font-family:monospace;line-height:1.5" id="sign-link-display"></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button onclick="copySignLink()" style="flex:1;padding:11px;background:#2563eb;color:white;border:none;border-radius:9px;font-weight:700;font-size:0.82rem;cursor:pointer;font-family:'DM Sans',sans-serif">📋 Copier</button>
+        <button onclick="emailSignLink()" style="flex:1;padding:11px;background:#0f172a;color:white;border:none;border-radius:9px;font-weight:700;font-size:0.82rem;cursor:pointer;font-family:'DM Sans',sans-serif">📧 Email</button>
+      </div>
+      <button onclick="closeSignModal()" style="width:100%;padding:10px;background:transparent;color:#64748b;border:none;font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ PAGE SIGNATURE (candidat) ════════════════ -->
+<div id="sign-page">
+  <div class="sign-page-header">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="28" height="28" style="flex-shrink:0"><rect width="36" height="36" rx="9" fill="rgba(255,255,255,0.12)"/><circle cx="18" cy="12" r="5" fill="white" opacity="0.95"/><path d="M9 28 Q9 20 18 20 Q27 20 27 28" fill="white" opacity="0.95"/></svg>
+    <div>
+      <div style="color:white;font-weight:800;font-size:0.88rem;line-height:1.2">CoûtSalarié Pro</div>
+      <div style="color:rgba(255,255,255,0.6);font-size:0.7rem" id="sign-page-subtitle">Contrat à signer</div>
+    </div>
+  </div>
+  <div class="sign-page-body">
+    <div id="sign-page-parties" style="background:white;border-radius:14px;padding:16px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08)"></div>
+    <div style="font-size:0.78rem;font-weight:700;color:#64748b;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">📄 Contrat</div>
+    <div class="sign-contract-wrap"><iframe id="sign-contract-iframe" class="sign-contract-iframe" title="Contrat"></iframe></div>
+    <div class="sign-canvas-wrap" id="sign-canvas-section">
+      <div style="font-size:0.9rem;font-weight:800;color:#0f172a;margin-bottom:6px">✍️ Votre signature</div>
+      <div style="font-size:0.72rem;color:#64748b;text-align:center;margin-bottom:10px">Signez dans le cadre ci-dessous avec votre doigt</div>
+      <canvas id="sign-canvas"></canvas>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button onclick="clearSignCanvas()" style="flex:1;padding:11px;background:#f1f5f9;color:#475569;border:1.5px solid #e2e8f0;border-radius:9px;font-weight:700;font-size:0.82rem;cursor:pointer;font-family:'DM Sans',sans-serif">🗑️ Effacer</button>
+        <button onclick="validateSignature()" style="flex:2;padding:11px;background:#16a34a;color:white;border:none;border-radius:9px;font-weight:800;font-size:0.82rem;cursor:pointer;font-family:'DM Sans',sans-serif">✅ Je signe et valide ce contrat</button>
+      </div>
+    </div>
+    <div class="sign-confirm-screen" id="sign-confirm-screen">
+      <div style="font-size:3rem;margin-bottom:14px">✅</div>
+      <div style="font-size:1.1rem;font-weight:800;color:#15803d;margin-bottom:10px">Contrat signé avec succès !</div>
+      <div id="sign-confirm-details" style="font-size:0.82rem;color:#475569;line-height:1.8"></div>
+    </div>
+  </div>
+</div>
 
 <!-- ════════════════ PANNEAU ADMIN ════════════════ -->
 <div id="admin-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.92);z-index:20000;overflow-y:auto;padding:20px;font-family:'DM Sans',sans-serif">
