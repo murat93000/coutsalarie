@@ -1662,17 +1662,69 @@ function updateCardResults(id) {
 }
 
 function updateJournalier() {
-  const net  = parseFloat(document.querySelector('[id^="inp-net"]')?.value)  || 0;
-  const brut = parseFloat(document.querySelector('[id^="inp-brut"]')?.value) || 0;
-  const h    = parseFloat(document.getElementById('sim-heures')?.value)      || 35;
-  localStorage.setItem('sim_heures', h);
-  const heuresMois   = h * 52 / 12;
-  const joursParMois = 5 * 52 / 12;
-  const set = (elId, val) => { const el = document.getElementById(elId); if (el) el.textContent = val.toFixed(2) + ' €'; };
-  set('sim-th-net',    net  / heuresMois);
-  set('sim-th-brut',   brut / heuresMois);
-  set('sim-jour-net',  net  / joursParMois);
-  set('sim-jour-brut', brut / joursParMois);
+  const net    = parseFloat(document.querySelector('[id^="inp-net-"]')?.value)  || 0;
+  const brut   = parseFloat(document.querySelector('[id^="inp-brut-"]')?.value) || 0;
+  const isCadre = document.getElementById('sim-cadre')?.checked || false;
+  localStorage.setItem('sim_cadre', isCadre);
+  const hInput = document.getElementById('sim-heures');
+  let heuresMois, joursParMois;
+  if (isCadre) {
+    const joursAn = 218;
+    joursParMois  = joursAn / 12;
+    heuresMois    = 7 * joursParMois;
+    if (hInput) { hInput.disabled = true; hInput.style.opacity = '0.5'; hInput.style.background = '#f1f5f9'; }
+  } else {
+    const h = parseFloat(hInput?.value) || 35;
+    heuresMois    = (h * 52) / 12;
+    joursParMois  = (5 * 52) / 12;
+    localStorage.setItem('sim_heures', h);
+    if (hInput) { hInput.disabled = false; hInput.style.opacity = ''; hInput.style.background = ''; }
+  }
+  const tauxHoraireNet  = heuresMois   > 0 ? net  / heuresMois   : 0;
+  const tauxHoraireBrut = heuresMois   > 0 ? brut / heuresMois   : 0;
+  const journalierNet   = joursParMois > 0 ? net  / joursParMois : 0;
+  const journalierBrut  = joursParMois > 0 ? brut / joursParMois : 0;
+  if (!window._editingTH) {
+    const thNet  = document.getElementById('sim-th-net');
+    const thBrut = document.getElementById('sim-th-brut');
+    if (thNet)  thNet.value  = tauxHoraireNet.toFixed(4);
+    if (thBrut) thBrut.value = tauxHoraireBrut.toFixed(4);
+  }
+  const jNet  = document.getElementById('sim-jour-net');
+  const jBrut = document.getElementById('sim-jour-brut');
+  if (jNet)  jNet.textContent  = journalierNet.toFixed(2)  + ' €';
+  if (jBrut) jBrut.textContent = journalierBrut.toFixed(2) + ' €';
+}
+
+function _getHeuresMois() {
+  const isCadre = document.getElementById('sim-cadre')?.checked || false;
+  return isCadre ? 7 * (218 / 12) : ((parseFloat(document.getElementById('sim-heures')?.value) || 35) * 52 / 12);
+}
+
+function setTHBrut(val) {
+  if (window._editingTH) return;
+  window._editingTH = true;
+  const newBrut = (parseFloat(val) || 0) * _getHeuresMois();
+  const brutInput = document.querySelector('[id^="inp-brut-"]');
+  if (brutInput) {
+    const empId = parseInt(brutInput.id.replace('inp-brut-', ''));
+    brutInput.value = Math.round(newBrut);
+    setEmpInput(empId, 'brut', Math.round(newBrut));
+  }
+  window._editingTH = false;
+}
+
+function setTHNet(val) {
+  if (window._editingTH) return;
+  window._editingTH = true;
+  const newNet = (parseFloat(val) || 0) * _getHeuresMois();
+  const netInput = document.querySelector('[id^="inp-net-"]');
+  if (netInput) {
+    const empId = parseInt(netInput.id.replace('inp-net-', ''));
+    netInput.value = Math.round(newNet);
+    setEmpInput(empId, 'net', Math.round(newNet));
+  }
+  window._editingTH = false;
 }
 
 function setMode(id, mode) {
@@ -1735,18 +1787,38 @@ function renderCard(id) {
   const cNet  = emp.inputMode==='net'  ? '#2563eb' : '#e2e8f0';
   const cBrut = emp.inputMode==='brut' ? '#7c3aed' : '#e2e8f0';
   const cCout = emp.inputMode==='cout' ? '#16a34a' : '#e2e8f0';
-  const simHeures = localStorage.getItem('sim_heures') || '35';
+  const isCadre = localStorage.getItem('sim_cadre') === 'true';
+  const simHeures = isCadre ? '35' : (localStorage.getItem('sim_heures') || '35');
   const isFirst = employees[0]?.id === id;
   const journalierSection = isFirst ? `
-      <div style="margin-top:10px">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin:10px 0 6px;">
+        <input type="checkbox" id="sim-cadre" ${isCadre ? 'checked' : ''} onchange="updateJournalier()" style="width:16px;height:16px;cursor:pointer;accent-color:#2563eb">
+        <span style="font-size:0.8rem;font-weight:600;color:#475569">👔 Employé cadre (forfait jours)</span>
+      </label>
+      <div style="margin-bottom:8px">
         <label style="font-size:0.63rem;font-weight:800;color:#64748b;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.03em">⏱ HEURES / SEMAINE</label>
         <input id="sim-heures" type="number" value="${simHeures}" min="1" max="48" step="0.5"
-          style="width:100%;padding:8px 6px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.8rem;font-weight:700;box-sizing:border-box;font-family:'DM Mono',monospace;outline:none"
+          ${isCadre ? 'disabled placeholder="218 j/an (forfait)"' : ''}
+          style="width:100%;padding:8px 6px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.8rem;font-weight:700;box-sizing:border-box;font-family:'DM Mono',monospace;outline:none;${isCadre ? 'opacity:0.5;background:#f1f5f9;' : ''}"
           oninput="updateJournalier()">
       </div>
-      <div class="res-grid" style="grid-template-columns:1fr 1fr;margin-top:8px">
-        <div class="res-item"><span class="res-label">TAUX HORAIRE NET</span><span class="res-val" id="sim-th-net">— €</span></div>
-        <div class="res-item"><span class="res-label">TAUX HORAIRE BRUT</span><span class="res-val" id="sim-th-brut">— €</span></div>
+      <div class="res-grid" style="grid-template-columns:1fr 1fr;margin-top:0">
+        <div class="res-item" style="padding:6px 8px;cursor:text">
+          <span class="res-label">TAUX HOR. NET ✏️</span>
+          <input id="sim-th-net" type="number" step="0.0001" value="0"
+            style="width:100%;border:none;background:transparent;font-size:0.85rem;font-weight:700;font-family:'DM Mono',monospace;color:var(--blue-900);text-align:center;outline:none;padding:2px 0 0;box-sizing:border-box"
+            onfocus="this.parentElement.style.borderColor='#2563eb';this.parentElement.style.background='#eff6ff'"
+            onblur="this.parentElement.style.borderColor='';this.parentElement.style.background=''"
+            oninput="setTHNet(this.value)">
+        </div>
+        <div class="res-item" style="padding:6px 8px;cursor:text">
+          <span class="res-label">TAUX HOR. BRUT ✏️</span>
+          <input id="sim-th-brut" type="number" step="0.0001" value="0"
+            style="width:100%;border:none;background:transparent;font-size:0.85rem;font-weight:700;font-family:'DM Mono',monospace;color:var(--blue-900);text-align:center;outline:none;padding:2px 0 0;box-sizing:border-box"
+            onfocus="this.parentElement.style.borderColor='#7c3aed';this.parentElement.style.background='#f5f3ff'"
+            onblur="this.parentElement.style.borderColor='';this.parentElement.style.background=''"
+            oninput="setTHBrut(this.value)">
+        </div>
         <div class="res-item"><span class="res-label">JOURNALIER NET</span><span class="res-val" id="sim-jour-net">— €</span></div>
         <div class="res-item"><span class="res-label">JOURNALIER BRUT</span><span class="res-val" id="sim-jour-brut">— €</span></div>
       </div>` : '';
@@ -5572,6 +5644,17 @@ window.onload = () => {
   // Afficher bouton de secours si paiement pending non traité
   checkPendingPayment();
   addEmployee();
+  // Restaurer statut cadre
+  if (localStorage.getItem('sim_cadre') === 'true') {
+    const cb = document.getElementById('sim-cadre');
+    if (cb) cb.checked = true;
+  }
+  // Restaurer heures si non-cadre
+  const savedH = localStorage.getItem('sim_heures');
+  if (savedH) {
+    const hEl = document.getElementById('sim-heures');
+    if (hEl && !hEl.disabled) hEl.value = savedH;
+  }
   updateJournalier();
   runComparison();
   renderHistory();
