@@ -1658,7 +1658,23 @@ function updateCardResults(id) {
   if (br_el)  br_el.textContent  = r.br.toLocaleString('fr-FR')  + ' €';
   if (pat_el) pat_el.textContent = r.pat.toLocaleString('fr-FR') + ' €';
   if (tot_el) tot_el.textContent = r.tot.toLocaleString('fr-FR') + ' €';
+  updateJournalier();
 }
+
+function updateJournalier() {
+  const net  = parseFloat(document.querySelector('[id^="inp-net"]')?.value)  || 0;
+  const brut = parseFloat(document.querySelector('[id^="inp-brut"]')?.value) || 0;
+  const h    = parseFloat(document.getElementById('sim-heures')?.value)      || 35;
+  localStorage.setItem('sim_heures', h);
+  const heuresMois   = h * 52 / 12;
+  const joursParMois = 5 * 52 / 12;
+  const set = (elId, val) => { const el = document.getElementById(elId); if (el) el.textContent = val.toFixed(2) + ' €'; };
+  set('sim-th-net',    net  / heuresMois);
+  set('sim-th-brut',   brut / heuresMois);
+  set('sim-jour-net',  net  / joursParMois);
+  set('sim-jour-brut', brut / joursParMois);
+}
+
 function setMode(id, mode) {
   const emp = employees.find(e => e.id === id);
   if (!emp) return;
@@ -1719,6 +1735,21 @@ function renderCard(id) {
   const cNet  = emp.inputMode==='net'  ? '#2563eb' : '#e2e8f0';
   const cBrut = emp.inputMode==='brut' ? '#7c3aed' : '#e2e8f0';
   const cCout = emp.inputMode==='cout' ? '#16a34a' : '#e2e8f0';
+  const simHeures = localStorage.getItem('sim_heures') || '35';
+  const isFirst = employees[0]?.id === id;
+  const journalierSection = isFirst ? `
+      <div style="margin-top:10px">
+        <label style="font-size:0.63rem;font-weight:800;color:#64748b;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.03em">⏱ HEURES / SEMAINE</label>
+        <input id="sim-heures" type="number" value="${simHeures}" min="1" max="48" step="0.5"
+          style="width:100%;padding:8px 6px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.8rem;font-weight:700;box-sizing:border-box;font-family:'DM Mono',monospace;outline:none"
+          oninput="updateJournalier()">
+      </div>
+      <div class="res-grid" style="grid-template-columns:1fr 1fr;margin-top:8px">
+        <div class="res-item"><span class="res-label">TAUX HORAIRE NET</span><span class="res-val" id="sim-th-net">— €</span></div>
+        <div class="res-item"><span class="res-label">TAUX HORAIRE BRUT</span><span class="res-val" id="sim-th-brut">— €</span></div>
+        <div class="res-item"><span class="res-label">JOURNALIER NET</span><span class="res-val" id="sim-jour-net">— €</span></div>
+        <div class="res-item"><span class="res-label">JOURNALIER BRUT</span><span class="res-val" id="sim-jour-brut">— €</span></div>
+      </div>` : '';
   el.innerHTML = `
     <div class="emp-card-header">
       <div style="display:flex;align-items:center;gap:8px">
@@ -1775,6 +1806,7 @@ function renderCard(id) {
         <div class="res-item"><span class="res-label">Patronal</span><span class="res-val" id="res-pat-${id}">${r.pat.toLocaleString('fr-FR')} €</span></div>
         <div class="res-item highlight"><span class="res-label">Coût total</span><span class="res-val" id="res-tot-${id}">${r.tot.toLocaleString('fr-FR')} €</span></div>
       </div>
+      ${journalierSection}
     </div>`;
 }
 function updateTotals() {
@@ -5540,6 +5572,7 @@ window.onload = () => {
   // Afficher bouton de secours si paiement pending non traité
   checkPendingPayment();
   addEmployee();
+  updateJournalier();
   runComparison();
   renderHistory();
   renderContracts();
