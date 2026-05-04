@@ -1684,12 +1684,10 @@ function updateJournalier() {
   const tauxHoraireBrut = heuresMois   > 0 ? brut / heuresMois   : 0;
   const journalierNet   = joursParMois > 0 ? net  / joursParMois : 0;
   const journalierBrut  = joursParMois > 0 ? brut / joursParMois : 0;
-  if (!window._editingTH) {
-    const thNet  = document.getElementById('sim-th-net');
-    const thBrut = document.getElementById('sim-th-brut');
-    if (thNet)  thNet.value  = tauxHoraireNet.toFixed(2);
-    if (thBrut) thBrut.value = tauxHoraireBrut.toFixed(2);
-  }
+  const thNet  = document.getElementById('sim-th-net');
+  const thBrut = document.getElementById('sim-th-brut');
+  if (thNet  && document.activeElement !== thNet)  thNet.value  = tauxHoraireNet.toFixed(2);
+  if (thBrut && document.activeElement !== thBrut) thBrut.value = tauxHoraireBrut.toFixed(2);
   const jNet  = document.getElementById('sim-jour-net');
   const jBrut = document.getElementById('sim-jour-brut');
   if (jNet)  jNet.textContent  = journalierNet.toFixed(2)  + ' €';
@@ -1812,8 +1810,7 @@ function renderCard(id) {
             <input id="sim-th-net" type="number" step="0.01" min="0" value="0"
               style="width:100%;padding-right:20px;border:none;background:transparent;font-size:0.85rem;font-weight:700;font-family:'DM Mono',monospace;color:var(--blue-900);text-align:center;outline:none;box-sizing:border-box"
               onfocus="this.closest('.res-item').style.borderColor='#2563eb';this.closest('.res-item').style.background='#eff6ff';this.select()"
-              onblur="this.closest('.res-item').style.borderColor='';this.closest('.res-item').style.background=''"
-              oninput="setTHNet(this.value)">
+              onblur="this.closest('.res-item').style.borderColor='';this.closest('.res-item').style.background='';setTHNet(this.value)">
             <span style="position:absolute;right:4px;color:#94a3b8;font-size:13px;pointer-events:none">€</span>
           </div>
         </div>
@@ -1823,8 +1820,7 @@ function renderCard(id) {
             <input id="sim-th-brut" type="number" step="0.01" min="0" value="0"
               style="width:100%;padding-right:20px;border:none;background:transparent;font-size:0.85rem;font-weight:700;font-family:'DM Mono',monospace;color:var(--blue-900);text-align:center;outline:none;box-sizing:border-box"
               onfocus="this.closest('.res-item').style.borderColor='#7c3aed';this.closest('.res-item').style.background='#f5f3ff';this.select()"
-              onblur="this.closest('.res-item').style.borderColor='';this.closest('.res-item').style.background=''"
-              oninput="setTHBrut(this.value)">
+              onblur="this.closest('.res-item').style.borderColor='';this.closest('.res-item').style.background='';setTHBrut(this.value)">
             <span style="position:absolute;right:4px;color:#94a3b8;font-size:13px;pointer-events:none">€</span>
           </div>
         </div>
