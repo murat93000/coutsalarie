@@ -1,6 +1,6 @@
 // CoûtSalarié Pro — Service Worker
 // VERSION AUTO : change à chaque déploiement pour invalider le cache
-const CACHE_VERSION = '20260309-3';
+const CACHE_VERSION = '20260504-1';
 const CACHE_NAME = 'coutsalarie-' + CACHE_VERSION;
 
 // Fichiers à mettre en cache

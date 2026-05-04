@@ -5,8 +5,9 @@
   "start_url": "/coutsalarie/",
   "scope": "/coutsalarie/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#0f172a",
-  "theme_color": "#2563eb",
+  "theme_color": "#0f172a",
   "orientation": "portrait",
   "categories": ["business", "productivity"],
   "icons": [
