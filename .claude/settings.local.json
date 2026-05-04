@@ -4,7 +4,11 @@
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git push *)",
-      "Bash(git config *)"
+      "Bash(git config *)",
+      "Bash(Select-String -Path \"C:\\\\Users\\\\mkmur\\\\OneDrive\\\\Bureau\\\\coutsalarie\\\\index.html\" -Pattern \"^function wizGenerate|^function promGenerateModif\")",
+      "Bash(Select-Object -First 2)",
+      "PowerShell(\\(Get-Content -Path \"C:\\\\Users\\\\mkmur\\\\OneDrive\\\\Bureau\\\\coutsalarie\\\\index.html\" | Select-String -Pattern \"function wizGenerate\\\\\\(\\\\\\)|function promGenerate\\\\\\(\\\\\\)\"\\).LineNumber)",
+      "PowerShell(\\(Get-Content -Path \"C:\\\\Users\\\\mkmur\\\\OneDrive\\\\Bureau\\\\coutsalarie\\\\index.html\" | Select-String -Pattern \"saveContractToHistory|savePromesseToHistory\"\\).LineNumber)"
     ]
   }
 }

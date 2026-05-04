@@ -5085,6 +5085,8 @@ function showPage(id, tabEl) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   tabEl.classList.add('active');
+  const footer = document.querySelector('.footer');
+  if (footer) footer.style.display = (id === 'simulation' || id === 'comparateur') ? '' : 'none';
   if (id === 'contrats') {
     injectWizCSS();
     const c = document.getElementById('wiz-container');
@@ -5547,6 +5549,13 @@ window.onload = () => {
   const c = loadConfig();
   if (c.welcome_actif === false) {
     welcomeClose();
+  }
+  // Initialiser la visibilité de la barre masse salariale selon l'onglet actif
+  const activePage = document.querySelector('.page.active');
+  const footerBar = document.querySelector('.footer');
+  if (footerBar && activePage) {
+    const activeId = activePage.id.replace('page-', '');
+    footerBar.style.display = (activeId === 'simulation' || activeId === 'comparateur') ? '' : 'none';
   }
 };
 </script>
