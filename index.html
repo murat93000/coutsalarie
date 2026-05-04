@@ -1687,8 +1687,8 @@ function updateJournalier() {
   if (!window._editingTH) {
     const thNet  = document.getElementById('sim-th-net');
     const thBrut = document.getElementById('sim-th-brut');
-    if (thNet)  thNet.value  = tauxHoraireNet.toFixed(4);
-    if (thBrut) thBrut.value = tauxHoraireBrut.toFixed(4);
+    if (thNet)  thNet.value  = tauxHoraireNet.toFixed(2)  + ' €';
+    if (thBrut) thBrut.value = tauxHoraireBrut.toFixed(2) + ' €';
   }
   const jNet  = document.getElementById('sim-jour-net');
   const jBrut = document.getElementById('sim-jour-brut');
@@ -1704,27 +1704,29 @@ function _getHeuresMois() {
 function setTHBrut(val) {
   if (window._editingTH) return;
   window._editingTH = true;
-  const newBrut = (parseFloat(val) || 0) * _getHeuresMois();
+  const newBrut = (parseFloat(val.replace(' €', '')) || 0) * _getHeuresMois();
   const brutInput = document.querySelector('[id^="inp-brut-"]');
-  if (brutInput) {
+  if (brutInput && !isNaN(newBrut)) {
     const empId = parseInt(brutInput.id.replace('inp-brut-', ''));
     brutInput.value = Math.round(newBrut);
     setEmpInput(empId, 'brut', Math.round(newBrut));
   }
   window._editingTH = false;
+  updateJournalier();
 }
 
 function setTHNet(val) {
   if (window._editingTH) return;
   window._editingTH = true;
-  const newNet = (parseFloat(val) || 0) * _getHeuresMois();
+  const newNet = (parseFloat(val.replace(' €', '')) || 0) * _getHeuresMois();
   const netInput = document.querySelector('[id^="inp-net-"]');
-  if (netInput) {
+  if (netInput && !isNaN(newNet)) {
     const empId = parseInt(netInput.id.replace('inp-net-', ''));
     netInput.value = Math.round(newNet);
     setEmpInput(empId, 'net', Math.round(newNet));
   }
   window._editingTH = false;
+  updateJournalier();
 }
 
 function setMode(id, mode) {
@@ -1805,7 +1807,7 @@ function renderCard(id) {
       <div class="res-grid" style="grid-template-columns:1fr 1fr;margin-top:0">
         <div class="res-item" style="padding:6px 8px;cursor:text">
           <span class="res-label">TAUX HOR. NET ✏️</span>
-          <input id="sim-th-net" type="number" step="0.0001" value="0"
+          <input id="sim-th-net" type="text" inputmode="decimal" value="0 €"
             style="width:100%;border:none;background:transparent;font-size:0.85rem;font-weight:700;font-family:'DM Mono',monospace;color:var(--blue-900);text-align:center;outline:none;padding:2px 0 0;box-sizing:border-box"
             onfocus="this.parentElement.style.borderColor='#2563eb';this.parentElement.style.background='#eff6ff'"
             onblur="this.parentElement.style.borderColor='';this.parentElement.style.background=''"
@@ -1813,7 +1815,7 @@ function renderCard(id) {
         </div>
         <div class="res-item" style="padding:6px 8px;cursor:text">
           <span class="res-label">TAUX HOR. BRUT ✏️</span>
-          <input id="sim-th-brut" type="number" step="0.0001" value="0"
+          <input id="sim-th-brut" type="text" inputmode="decimal" value="0 €"
             style="width:100%;border:none;background:transparent;font-size:0.85rem;font-weight:700;font-family:'DM Mono',monospace;color:var(--blue-900);text-align:center;outline:none;padding:2px 0 0;box-sizing:border-box"
             onfocus="this.parentElement.style.borderColor='#7c3aed';this.parentElement.style.background='#f5f3ff'"
             onblur="this.parentElement.style.borderColor='';this.parentElement.style.background=''"
